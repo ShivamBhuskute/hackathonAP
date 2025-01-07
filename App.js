@@ -1,10 +1,24 @@
+import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View, Button } from 'react-native';
+import Start from './start'; // Correctly import Start with default export
+import Dashboard from './dashboard'; // Correctly import Dashboard with default export
+
 
 export default function App() {
+  const [showDashboard, setShowDashboard] = useState(false);
+
+  const handleScreenClick = () => {
+    setShowDashboard(true); // Navigate to Dashboard when clicked
+  };
+
   return (
     <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
+      {showDashboard ? (
+        <Dashboard />
+      ) : (
+        <Start onPress={handleScreenClick} /> // Trigger handleScreenClick when clicked
+      )}
       <StatusBar style="auto" />
     </View>
   );

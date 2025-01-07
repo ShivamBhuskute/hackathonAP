@@ -1,5 +1,6 @@
 {
   "expo": {
+    "entryPoint": "./App.js", 
     "name": "EvenHandling",
     "slug": "EvenHandling",
     "version": "1.0.0",
