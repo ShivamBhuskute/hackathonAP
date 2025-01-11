@@ -1,101 +1,178 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 
-export default function Start({ onPress }) {
-  // Animated values for fade-in effect
-  const fadeAnimTitle = useRef(new Animated.Value(0)).current; // Initial opacity for title
-  const fadeAnimSubtitle = useRef(new Animated.Value(0)).current; // Initial opacity for subtitle
-  const scaleAnim = useRef(new Animated.Value(1)).current; // Initial scale for the button
+export default function Start({ navigation }) {
+  const fadeAnimTitle = useRef(new Animated.Value(0)).current;
+  const fadeAnimSubtitle = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
-  // Animation for fade-in effect
+  // Animated values for bubble movement
+  const bubble1Position = useRef(new Animated.ValueXY({ x: -50, y: 0 })).current;
+  const bubble2Position = useRef(new Animated.ValueXY({ x: 200, y: 0 })).current;
+  const bubble3Position = useRef(new Animated.ValueXY({ x: 500, y: 0 })).current;
+  const bubble4Position = useRef(new Animated.ValueXY({ x: 300, y: 0 })).current;
+
   useEffect(() => {
-    // Fade in title and subtitle with staggered timing
-    Animated.sequence([
-      Animated.timing(fadeAnimTitle, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      }),
-      Animated.timing(fadeAnimSubtitle, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [fadeAnimTitle, fadeAnimSubtitle]);
+    // Disable the header for this screen
+    navigation.setOptions({ headerShown: false });
 
-  // Scale animation for the button
+    // Fade-in animation for the title and subtitle
+    Animated.sequence([ 
+      Animated.timing(fadeAnimTitle, { toValue: 1, duration: 1000, useNativeDriver: true }),
+      Animated.timing(fadeAnimSubtitle, { toValue: 1, duration: 1000, useNativeDriver: true }),
+    ]).start();
+
+    // Start continuous bubble animations
+    Animated.loop(
+      Animated.stagger(1500, [
+        // Bubble 1 animation: Move in a circular pattern
+        Animated.timing(bubble1Position, {
+          toValue: { x: Math.random() * 300 - 150, y: Math.random() * 300 - 150 }, // Randomized movement
+          duration: 5000 + Math.random() * 2000, // Random duration for each move
+          useNativeDriver: true,
+        }),
+        // Bubble 2 animation
+        Animated.timing(bubble2Position, {
+          toValue: { x: Math.random() * 300 - 150, y: Math.random() * 300 - 150 },
+          duration: 5000 + Math.random() * 2000,
+          useNativeDriver: true,
+        }),
+        // Bubble 3 animation
+        Animated.timing(bubble3Position, {
+          toValue: { x: Math.random() * 300 - 150, y: Math.random() * 300 - 150 },
+          duration: 5000 + Math.random() * 2000,
+          useNativeDriver: true,
+        }),
+        // Bubble 4 animation
+        Animated.timing(bubble4Position, {
+          toValue: { x: Math.random() * 300 - 150, y: Math.random() * 300 - 150 },
+          duration: 5000 + Math.random() * 2000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [navigation]); // Make sure to include navigation as a dependency
+
   const handlePressIn = () => {
-    Animated.spring(scaleAnim, {
-      toValue: 0.95, // Scale down when pressed
-      friction: 4,
-      useNativeDriver: true,
-    }).start();
+    Animated.spring(scaleAnim, { toValue: 0.95, friction: 4, useNativeDriver: true }).start();
   };
 
   const handlePressOut = () => {
-    Animated.spring(scaleAnim, {
-      toValue: 1, // Scale back to original size
-      friction: 4,
-      useNativeDriver: true,
-    }).start();
+    Animated.spring(scaleAnim, { toValue: 1, friction: 4, useNativeDriver: true }).start();
   };
 
+  const handlePress = () => {
+    // Redirect to the next page (Signup)
+    navigation.navigate('Signup');
+  };
+  // const handlePress = () => { fo tp
+  //   navigation.navigate('StudentDashboardApp');
+  // };
+  
+
   return (
-    <ImageBackground
-      source={{ uri: 'https://via.placeholder.com/1080x1920.png?text=EventManager+Background' }} // Background image
-      style={styles.backgroundImage}
-    >
-      <View style={styles.container}>
-        {/* Title with fade-in animation */}
+    <View style={styles.container}>
+      {/* Moving Bubbles */}
+      <Animated.View
+        style={[styles.bubble1, { transform: [{ translateX: bubble1Position.x }, { translateY: bubble1Position.y }] }]}>
+      </Animated.View>
+      <Animated.View
+        style={[styles.bubble2, { transform: [{ translateX: bubble2Position.x }, { translateY: bubble2Position.y }] }]}>
+      </Animated.View>
+      <Animated.View
+        style={[styles.bubble3, { transform: [{ translateX: bubble3Position.x }, { translateY: bubble3Position.y }] }]}>
+      </Animated.View>
+      <Animated.View
+        style={[styles.bubble4, { transform: [{ translateX: bubble4Position.x }, { translateY: bubble4Position.y }] }]}>
+      </Animated.View>
+
+      <View style={styles.innerContainer}>
         <Animated.Text style={[styles.title, { opacity: fadeAnimTitle }]}>
           Welcome to EventManager
         </Animated.Text>
-
-        {/* Subtitle with fade-in animation */}
         <Animated.Text style={[styles.subtitle, { opacity: fadeAnimSubtitle }]}>
           Start managing your events with ease. Let’s get started!
         </Animated.Text>
-
-        {/* Button with scale animation on press */}
         <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
           <TouchableOpacity
             style={styles.buttonPrimary}
-            onPress={onPress}
-            onPressIn={handlePressIn} // Trigger scale-down effect when pressed
-            onPressOut={handlePressOut} // Trigger scale-up effect when press is released
+            onPress={handlePress}
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
           >
             <Text style={styles.buttonText}>Get Started</Text>
           </TouchableOpacity>
         </Animated.View>
       </View>
-    </ImageBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  backgroundImage: {
-    flex: 1,
-    resizeMode: 'cover', // Ensure the image covers the entire screen
-  },
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent overlay for better text visibility
+    backgroundColor: '#121212', // Dark background color
+  },
+  bubble1: {
+    width: 180,   // Bigger bubbles
+    height: 180,  // Bigger bubbles
+    borderRadius: 90, // Make it round
+    backgroundColor: '#62B1F6', // Light blue
+    position: 'absolute',
+    top: 20,
+    left: -30,
+    opacity: 0.5,
+  },
+  bubble2: {
+    width: 160,   // Bigger bubbles
+    height: 160,  // Bigger bubbles
+    borderRadius: 80, // Make it round
+    backgroundColor: '#4A90E2', // Medium blue
+    position: 'absolute',
+    top: 150,
+    left: 200,
+    opacity: 0.4,
+  },
+  bubble3: {
+    width: 200,   // Bigger bubbles
+    height: 200,  // Bigger bubbles
+    borderRadius: 100, // Make it round
+    backgroundColor: '#2A5298', // Royal blue
+    position: 'absolute',
+    top: 400,
+    left: -50,
+    opacity: 0.3,
+  },
+  bubble4: {
+    width: 240,   // Bigger bubbles
+    height: 240,  // Bigger bubbles
+    borderRadius: 120, // Make it round
+    backgroundColor: '#1F3558', // Dark blue
+    position: 'absolute',
+    top: 600,
+    left: 50,
+    opacity: 0.4,
+  },
+  innerContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    textAlign: 'center',
+    zIndex: 1, // Ensure content stays above the bubbles
   },
   title: {
     fontSize: 36,
     marginBottom: 20,
     fontWeight: 'bold',
-    color: '#fff', // White text for better contrast
+    color: '#fff', // White text color for dark theme
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 18,
     marginBottom: 40,
-    color: '#ddd', // Light gray for subtitle
+    color: '#ccc', // Lighter gray for subtitle text
     textAlign: 'center',
     paddingHorizontal: 10,
   },
@@ -104,17 +181,13 @@ const styles = StyleSheet.create({
     padding: 15,
     marginBottom: 20,
     borderRadius: 30,
-    backgroundColor: '#4CAF50', // Green color
+    backgroundColor: '#62B1F6', // blue button
     alignItems: 'center',
-    elevation: 5, // Deeper shadow for Android
-    shadowColor: '#000', // Shadow for iOS
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
+    elevation: 5,
   },
   buttonText: {
     fontSize: 18,
-    color: '#fff', // White text
+    color: '#fff',
     fontWeight: 'bold',
   },
 });
