@@ -1,6 +1,6 @@
 {
   "expo": {
-    "entryPoint": "./App.js", 
+    "entryPoint": "./App.js",
     "name": "EvenHandling",
     "slug": "EvenHandling",
     "version": "1.0.0",
@@ -24,6 +24,9 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-build-properties"
+    ]
   }
 }

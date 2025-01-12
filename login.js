@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Animated, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { commonStyles } from './commonStyles';
+import {auth, signInWithEmailAndPassword} from './src/firebase'
 
 export default function LoginPage({ navigation }) {
   const [email, setEmail] = useState('');
@@ -93,10 +94,17 @@ export default function LoginPage({ navigation }) {
     return true;
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (validateInputs()) {
-      console.log('Login successful');
-      // Proceed with login logic or navigate to the next screen
+      try {
+        // Firebase sign-in function
+        await signInWithEmailAndPassword(auth, email.trim(), password);
+        console.log('Login successful');
+        // Navigate to the next screen (e.g., home page)
+        navigation.navigate('RoleSelection');
+      } catch (error) {
+        setErrorMessage(error.message); // Show Firebase error
+      }
     }
   };
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Image } from "react-native";
+// import { Image } from "react-native";
 import Start from './start';
 import Signup from './signup';
 import RoleSelection from './RoleSelection';
