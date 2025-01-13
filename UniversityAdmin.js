@@ -20,7 +20,7 @@ export default function UniversityAdminRegistration({ navigation }) {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [contactNumber, setContactNumber] = useState("");
     const [universityName, setUniversityName] = useState("");
-    const [verificationId, setVerificationId] = useState("");
+    const [universityId, setUniversityId] = useState("");
 
     // Animations
     const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -58,7 +58,7 @@ export default function UniversityAdminRegistration({ navigation }) {
             !confirmPassword ||
             !contactNumber ||
             !universityName ||
-            !verificationId
+            !universityId
         ) {
             Alert.alert("Error", "Please fill all fields.");
             return;
@@ -79,29 +79,12 @@ export default function UniversityAdminRegistration({ navigation }) {
                 email,
                 password
             );
-            const user = userCredential.user;
 
-            // Add user data to Firestore
-            await setDoc(doc(db, "users", user.uid), {
-                role: "universityadmin",
-                name,
-                email,
-                contactNumber,
-                institutionName: universityName,
-                verificationId,
+            // Create university document with user-provided universityId
+            const data = await setDoc(doc(db, "university", universityId), {
+                name: universityName,
+                adminName: name,
             });
-
-            // Create or update institution document
-            const institutionRef = doc(db, "institutions", universityName);
-            await setDoc(
-                institutionRef,
-                {
-                    name: universityName,
-                    admins: arrayUnion(user.uid),
-                    eventManagers: [],
-                },
-                { merge: true }
-            );
 
             Alert.alert("Success", "Registration completed successfully.", [
                 {
@@ -248,8 +231,8 @@ export default function UniversityAdminRegistration({ navigation }) {
                     style={styles.input}
                     placeholder="Enter the verification ID provided by the university"
                     placeholderTextColor="#888"
-                    value={verificationId}
-                    onChangeText={setVerificationId}
+                    value={universityId}
+                    onChangeText={setUniversityId}
                 />
             </View>
 
