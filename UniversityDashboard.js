@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createStackNavigator } from '@react-navigation/stack';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import UniversityEvents from './UniversityEvents';
 import { Image } from "react-native";
@@ -9,11 +9,11 @@ import UniBudgetPage from './UniBudgetPage';
 import UniPermissionPage from './UniPermissionPage';
 import UniReportPage from './UniReportPage';
 import UniSettingPage from './UniSettingPage';
+
 // Sidebar Menu
 const SidebarMenu = ({ navigation }) => {
   return (
     <View style={styles.sidebarContainer}>
-      {/* University Admin Image and Tag */}
       <Image 
         source={require('./UniversityAdminImage.png')} 
         style={styles.adminImage} 
@@ -22,7 +22,6 @@ const SidebarMenu = ({ navigation }) => {
         <Text style={styles.adminTag}>University Admin</Text>
       </View>
 
-      {/* Menu Items */}
       <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("Dashboard")}>
         <Ionicons name="home" size={24} color="#FFF" />
         <Text style={styles.menuItemText}>Dashboard</Text>
@@ -58,10 +57,23 @@ const Dashboard = () => {
     { name: "Tech Conference", date: "2025-03-10", status: "Scheduled", location: "Hall A" },
   ]);
 
+  const [completedEvents, setCompletedEvents] = useState([
+    { id: 1, name: "AI Symposium", date: "2025-01-10", time: "10:00 AM", location: "Room 202" },
+    { id: 2, name: "Blockchain Summit", date: "2025-01-08", time: "11:00 AM", location: "Hall B" },
+  ]);
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+
   const stats = {
     totalEvents: 15,
     activeEvents: 5,
     completedEvents: 10,
+  };
+
+  const openEventDetails = (event) => {
+    setSelectedEvent(event);
+    setModalVisible(true);
   };
 
   return (
@@ -83,6 +95,26 @@ const Dashboard = () => {
           <Text style={styles.cardContent}>{stats.completedEvents}</Text>
         </View>
       </View>
+
+      {/* Completed Events Section */}
+      <Text style={styles.sectionTitle}>Completed Events</Text>
+      <FlatList
+        data={completedEvents}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.eventItem}>
+            <Text style={styles.eventName}>{item.name}</Text>
+            <Text style={styles.eventDetails}>Date: {item.date} | Location: {item.location}</Text>
+            <Text style={styles.eventStatus}>Time: {item.time}</Text>
+            <TouchableOpacity
+              style={styles.viewButton}
+              onPress={() => openEventDetails(item)}
+            >
+              <Text style={styles.viewButtonText}>View Details</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      />
 
       {/* Upcoming Events Section */}
       <Text style={styles.sectionTitle}>Upcoming Events</Text>
@@ -117,6 +149,42 @@ const Dashboard = () => {
       <View style={styles.notificationCard}>
         <Text style={styles.notificationText}>5 Granted Permissions</Text>
       </View>
+
+      {/* Modal for Event Details */}
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            {selectedEvent && (
+              <>
+                <Text style={styles.modalTitle}>{selectedEvent.name}</Text>
+                <Text style={styles.modalContent}>Event ID: {selectedEvent.id}</Text>
+                <Text style={styles.modalContent}>Date: {selectedEvent.date}</Text>
+                <Text style={styles.modalContent}>Time: {selectedEvent.time}</Text>
+
+                <View style={styles.modalButtonContainer}>
+                  <TouchableOpacity style={styles.modalButton} onPress={() => { /* Navigate to performance report */ }}>
+                    <Text style={styles.modalButtonText}>Event Performance Report</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.modalButton} onPress={() => { /* Navigate to budget report */ }}>
+                    <Text style={styles.modalButtonText}>Budget Report</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.modalButton} onPress={() => { /* Navigate to attendance report */ }}>
+                    <Text style={styles.modalButtonText}>Attendance Report</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+            <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -274,11 +342,60 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 12,
     marginBottom: 15,
- 
   },
   notificationText: {
     fontSize: 16,
     color: "#B0B0B0",
+  },
+
+  // Modal Styles
+  modalBackground: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContainer: {
+    backgroundColor: "#1E1E1E",
+    padding: 20,
+    borderRadius: 12,
+    width: "80%",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#FFF",
+    marginBottom: 10,
+  },
+  modalContent: {
+    fontSize: 16,
+    color: "#B0B0B0",
+    marginBottom: 10,
+  },
+  modalButtonContainer: {
+    marginTop: 15,
+  },
+  modalButton: {
+    backgroundColor: "#007BFF",
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  modalButtonText: {
+    color: "#FFF",
+    fontSize: 16,
+    textAlign: "center",
+  },
+  closeButton: {
+    backgroundColor: "#FF3B30",
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 20,
+  },
+  closeButtonText: {
+    color: "#FFF",
+    fontSize: 16,
+    textAlign: "center",
   },
 });
 
