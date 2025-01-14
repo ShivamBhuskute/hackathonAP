@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, FlatList, Modal, Button, Dimensions, ScrollView, Animated } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, FlatList, Modal, Dimensions, ScrollView, Animated } from 'react-native';
 
 // Get screen dimensions
 const { width, height } = Dimensions.get('window');
@@ -16,7 +16,7 @@ const sampleRegistrants = [
   { id: 8, name: 'Ethan Walker', email: 'ethan.walker@example.com', status: 'Pending', registrationTime: '2025-01-12 10:15 AM', event: 'Inter-college Sports Meet' },
 ];
 
-const OnlineRegistrationsPage = () => {
+const Registration = () => {
   const [registrants, setRegistrants] = useState(sampleRegistrants);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
@@ -81,12 +81,12 @@ const OnlineRegistrationsPage = () => {
   }, []);
 
   const renderItem = ({ item }) => (
-    <View style={styles.row}>
-      <Text style={styles.cell}>{item.name}</Text>
-      <Text style={styles.cell}>{item.email}</Text>
-      <Text style={styles.cell}>{item.status}</Text>
-      <Text style={styles.cell}>{item.registrationTime}</Text>
-      <Text style={styles.cell}>{item.event}</Text>
+    <View style={styles.card}>
+      <Text style={styles.cardTitle}>{item.name}</Text>
+      <Text style={styles.cardText}>Email: {item.email}</Text>
+      <Text style={styles.cardText}>Status: {item.status}</Text>
+      <Text style={styles.cardText}>Time: {item.registrationTime}</Text>
+      <Text style={styles.cardText}>Event: {item.event}</Text>
       <TouchableOpacity style={styles.actionButton} onPress={() => openModal(item)}>
         <Text style={styles.actionButtonText}>Actions</Text>
       </TouchableOpacity>
@@ -133,16 +133,8 @@ const OnlineRegistrationsPage = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Table */}
-      <Animated.View style={[styles.table, { opacity: fadeAnim }]}>
-        <View style={styles.headerRow}>
-          <Text style={styles.headerCell}>Name</Text>
-          <Text style={styles.headerCell}>Email</Text>
-          <Text style={styles.headerCell}>Status</Text>
-          <Text style={styles.headerCell}>Registration Time</Text>
-          <Text style={styles.headerCell}>Event</Text>
-          <Text style={styles.headerCell}>Actions</Text>
-        </View>
+      {/* Card List */}
+      <Animated.View style={[styles.cardContainer, { opacity: fadeAnim }]}>
         <FlatList
           data={registrants}
           keyExtractor={(item) => item.id.toString()}
@@ -212,10 +204,6 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     fontSize: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 5,
   },
   filtersContainer: {
     marginBottom: 20,
@@ -243,43 +231,33 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 16,
   },
-  table: {
+  cardContainer: {
+    marginTop: 20,
+  },
+  card: {
     backgroundColor: '#1f1f1f',
     borderRadius: 12,
-    marginTop: 20,
+    padding: 15,
+    marginBottom: 15,
     borderWidth: 1,
     borderColor: '#333',
   },
-  headerRow: {
-    flexDirection: 'row',
-    backgroundColor: '#333',
-    padding: 12,
-    borderBottomWidth: 2,
-    borderBottomColor: '#555',
-  },
-  headerCell: {
-    flex: 1,
-    color: '#FFF',
-    textAlign: 'center',
-    fontSize: 14,
+  cardTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
-  },
-  row: {
-    flexDirection: 'row',
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
-  },
-  cell: {
-    flex: 1,
     color: '#FFF',
-    textAlign: 'center',
+    marginBottom: 5,
+  },
+  cardText: {
     fontSize: 14,
+    color: '#FFF',
+    marginBottom: 5,
   },
   actionButton: {
     backgroundColor: '#007BFF',
     padding: 10,
     borderRadius: 8,
+    marginTop: 10,
     alignItems: 'center',
   },
   actionButtonText: {
@@ -353,4 +331,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OnlineRegistrationsPage;
+export default Registration;

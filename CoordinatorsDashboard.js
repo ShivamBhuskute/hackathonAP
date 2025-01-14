@@ -33,10 +33,6 @@ const SidebarMenu = ({ navigation }) => {
         <Ionicons name="home" size={24} color="#FFF" />
         <Text style={styles.menuItemText}>Dashboard</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("CreateEvent")}>
-        <Ionicons name="calendar" size={24} color="#FFF" />
-        <Text style={styles.menuItemText}>Create Event</Text>
-      </TouchableOpacity>
       <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("Registrations")}>
         <Ionicons name="person-add" size={24} color="#FFF" />
         <Text style={styles.menuItemText}>Registrations</Text>
@@ -207,12 +203,7 @@ const Dashboard = ({ navigation }) => {
       <View style={styles.quickLinksContainer}>
         <Text style={styles.quickLinksTitle}>Quick Links</Text>
         <View style={styles.quickLinks}>
-          <TouchableOpacity
-            style={[styles.quickLinkItem, styles.quickLinkCreateEvent]}
-            onPress={() => navigation.navigate("CreateEvent")}
-          >
-            <Text style={styles.quickLinkText}>Create Event</Text>
-          </TouchableOpacity>
+        
           <TouchableOpacity
             style={[styles.quickLinkItem, styles.quickLinkManageRegistrations]}
             onPress={() => navigation.navigate("Registrations")}
