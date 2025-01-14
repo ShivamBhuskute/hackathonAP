@@ -38,7 +38,7 @@ export default function App() {
         <Stack.Screen name="UniversityAdmin" component={UniversityAdmin} />
         <Stack.Screen name="Student" component={Student} />
         <Stack.Screen name="EventManager" component={EventManager} />
-        <Stack.Screen name="eventmanagerdashboard" component={eventmanagerdashboard} />
+       <Stack.Screen name="eventmanagerdashboard" component={eventmanagerdashboard} />
  
         <Stack.Screen name="UniversityDashboard" component={UniversityDashboard} />
         <Stack.Screen name="StudentDashboardApp" component={StudentDashboardApp} />
