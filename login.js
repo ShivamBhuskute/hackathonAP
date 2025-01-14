@@ -12,6 +12,7 @@ import { Picker } from "@react-native-picker/picker";
 import { commonStyles } from "./commonStyles";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { auth, db, signInWithEmailAndPassword } from "./src/firebase";
+import EventManagerDashboard from "./EventAttendance";
 
 export default function LoginPage({ navigation }) {
     const [email, setEmail] = useState("");
@@ -137,10 +138,6 @@ export default function LoginPage({ navigation }) {
                     // Navigate based on role
                     switch (role) {
                         case "student":
-                            // navigation.navigate("StudentDashboardApp", {
-                            //     studentId: id,
-                            //     universityId: universityId,
-                            // });
                             navigation.navigate("StudentDashboardApp", {
                                 screen: "Dashboard", // Specify the screen name
                                 initial: true,
@@ -150,19 +147,30 @@ export default function LoginPage({ navigation }) {
                                     universityId: universityId,
                                 },
                             });
-                            console.log("Navigating with:", { studentId: id, universityId: universityId });
+                            // console.log("Navigating with:", {
+                            //     studentId: id,
+                            //     universityId: universityId,
+                            // });
                             break;
                         case "coordinator":
                             navigation.navigate("CoordinatorsDashboard", {
                                 coordinatorId: id,
                                 universityId: universityId,
                             });
-                            break;
+                            break; 
                         case "eventManager":
                             navigation.navigate("eventmanagerdashboard", {
-                                managerId: id,
-                                universityId: universityId,
+                                screen: "EventManagerDashboard",
+                                intital: true,
+                                params: {
+                                    managerId: id,
+                                    universityId: universityId,
+                                },
                             });
+                            console.log("Navigating with:", {
+                              managerId: id,
+                              universityId: universityId,
+                          });
                             break;
                         case "admin":
                             navigation.navigate("UniversityDashboard", {

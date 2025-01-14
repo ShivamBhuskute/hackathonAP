@@ -2,324 +2,308 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  FlatList,
-  TouchableOpacity,
-  TextInput,
   StyleSheet,
-  Alert,
-  Modal,
-  Animated,
+  TouchableOpacity,
+  FlatList,
+  TextInput,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
+import { createStackNavigator } from '@react-navigation/stack';
+import * as ImagePicker from 'expo-image-picker';
 
-const CommunicationTools = () => {
-  const [messages, setMessages] = useState([
-    { id: '1', sender: 'John Doe', preview: 'Meeting at 3 PM', unread: true, timestamp: new Date().toLocaleTimeString() },
-    { id: '2', sender: 'Event Team', preview: 'Welcome to the event!', unread: false, timestamp: new Date().toLocaleTimeString() },
-  ]);
-  const [composeVisible, setComposeVisible] = useState(false);
-  const [newMessage, setNewMessage] = useState('');
-  const [selectedMessage, setSelectedMessage] = useState(null);
+// Stack Navigator Setup
+const Stack = createStackNavigator();
+
+const initialChats = [
+  { id: '1', name: 'Coordinator Group 1', unreadMessages: 2, type: 'group' },
+  { id: '2', name: 'Event Manager Group', unreadMessages: 1, type: 'group' },
+  { id: '3', name: 'Coordinator 1', unreadMessages: 0, type: 'individual' },
+  { id: '4', name: 'Event Manager', unreadMessages: 0, type: 'individual' },
+  { id: '5', name: 'Coordinator Group 2', unreadMessages: 3, type: 'group' },
+  { id: '6', name: 'Event Manager 2', unreadMessages: 0, type: 'individual' },
+  { id: '7', name: 'Coordinator 2', unreadMessages: 1, type: 'individual' },
+  { id: '8', name: 'Project Team', unreadMessages: 0, type: 'group' },
+];
+
+// Chat List Screen
+function ChatListScreen({ navigation }) {
   const [searchText, setSearchText] = useState('');
-  const [fadeAnim] = useState(new Animated.Value(0));
+  const [chats, setChats] = useState(initialChats);
 
-  const handleCompose = () => {
-    if (!newMessage.trim()) {
-      Alert.alert('Error', 'Message content cannot be empty!');
-      return;
-    }
-    setMessages([
-      {
-        id: (messages.length + 1).toString(),
-        sender: 'You',
-        preview: newMessage,
-        unread: true,
-        timestamp: new Date().toLocaleTimeString(),
-      },
-      ...messages,
-    ]);
-    Alert.alert('Message Sent', 'Your message has been sent successfully.');
-    setNewMessage('');
-    setComposeVisible(false);
-  };
-
-  const handleSearch = (text) => {
-    setSearchText(text);
-  };
-
-  const toggleUnread = (id) => {
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === id ? { ...msg, unread: !msg.unread } : msg
-      )
-    );
-  };
-
-  const deleteMessage = (id) => {
-    setMessages((prev) => prev.filter((msg) => msg.id !== id));
-  };
-
-  const renderMessageCard = ({ item }) => (
-    <TouchableOpacity
-      style={[styles.messageCard, item.unread && styles.unread]}
-      onPress={() => {
-        setSelectedMessage(item);
-        toggleUnread(item.id);
-      }}
-    >
-      <View style={styles.messageHeader}>
-        <Text style={styles.messageSender}>{item.sender}</Text>
-        {item.unread && <View style={styles.unreadDot} />}
-      </View>
-      <Text style={styles.messagePreview}>{item.preview}</Text>
-      <Text style={styles.messageTimestamp}>{item.timestamp}</Text>
-    </TouchableOpacity>
+  const filteredChats = chats.filter((chat) =>
+    chat.name.toLowerCase().includes(searchText.toLowerCase())
   );
-
-  const fadeIn = () => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 500,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const fadeOut = () => {
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 500,
-      useNativeDriver: true,
-    }).start();
-  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>In-App Messaging System</Text>
-
       <TextInput
-        style={styles.searchInput}
-        placeholder="Search messages..."
+        style={styles.searchBar}
+        placeholder="Search chats..."
+        placeholderTextColor="#bbb"
         value={searchText}
-        onChangeText={handleSearch}
+        onChangeText={setSearchText}
       />
-
       <FlatList
-        data={messages.filter((msg) =>
-          msg.sender.toLowerCase().includes(searchText.toLowerCase()) ||
-          msg.preview.toLowerCase().includes(searchText.toLowerCase())
-        )}
+        data={filteredChats}
         keyExtractor={(item) => item.id}
-        renderItem={renderMessageCard}
-      />
-
-      <TouchableOpacity
-        style={styles.composeButton}
-        onPress={() => {
-          setComposeVisible(!composeVisible);
-          composeVisible ? fadeOut() : fadeIn();
-        }}
-      >
-        <Text style={styles.composeButtonText}>Compose Message</Text>
-      </TouchableOpacity>
-
-      <Animated.View style={[styles.composeContainer, { opacity: fadeAnim }]}>
-        {composeVisible && (
-          <>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Compose your message..."
-              multiline
-              value={newMessage}
-              onChangeText={setNewMessage}
-            />
-            <TouchableOpacity style={styles.sendButton} onPress={handleCompose}>
-              <Text style={styles.sendButtonText}>Send</Text>
-            </TouchableOpacity>
-          </>
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.chatItem}
+            onPress={() =>
+              navigation.navigate('ChatScreen', { chatId: item.id, chatName: item.name, chatType: item.type })
+            }
+          >
+            <Text style={styles.chatName}>
+              {item.name} {item.type === 'group' ? '👥' : '💬'}
+            </Text>
+            {item.unreadMessages > 0 && (
+              <View style={styles.unreadBadge}>
+                <Text style={styles.unreadText}>{item.unreadMessages}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
         )}
-      </Animated.View>
-
-      {selectedMessage && (
-        <Modal
-          visible={true}
-          transparent={true}
-          onRequestClose={() => setSelectedMessage(null)}
-        >
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalHeader}>{selectedMessage.sender}</Text>
-              <Text style={styles.modalBody}>{selectedMessage.preview}</Text>
-              <Text style={styles.modalTimestamp}>{selectedMessage.timestamp}</Text>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => setSelectedMessage(null)}
-              >
-                <Text style={styles.closeButtonText}>Close</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => {
-                  deleteMessage(selectedMessage.id);
-                  setSelectedMessage(null);
-                }}
-              >
-                <Text style={styles.deleteButtonText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-      )}
+      />
     </View>
   );
-};
+}
 
+// Chat Screen
+function ChatScreen({ route, navigation }) {
+  const { chatName, chatType } = route.params;
+  const [messages, setMessages] = useState([
+    { id: '1', text: 'Hello! 👋', sender: 'Coordinator 1', type: 'text', timestamp: '12:30 PM', seen: false },
+    { id: '2', text: 'How can I assist you today?', sender: 'Event Manager', type: 'text', timestamp: '12:32 PM', seen: true },
+    { id: '3', text: 'Sure, let me check.', sender: 'You', type: 'text', timestamp: '12:35 PM', seen: true },
+  ]);
+  const [newMessage, setNewMessage] = useState('');
+  const [typing, setTyping] = useState(false);
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const newMsg = {
+        id: String(messages.length + 1),
+        text: result.assets[0].uri,
+        sender: 'You',
+        type: 'image',
+        timestamp: new Date().toLocaleTimeString(),
+        seen: false,
+      };
+      setMessages((prevMessages) => [...prevMessages, newMsg]);
+    }
+  };
+
+  const onSend = () => {
+    if (newMessage.trim() === '') return;
+
+    const newMsg = {
+      id: String(messages.length + 1),
+      text: newMessage,
+      sender: 'You',
+      type: 'text',
+      timestamp: new Date().toLocaleTimeString(),
+      seen: false,
+    };
+    setMessages((prevMessages) => [...prevMessages, newMsg]);
+    setNewMessage('');
+    setTyping(false);
+  };
+
+  const renderMessage = ({ item }) => (
+    <View
+      style={[
+        styles.messageContainer,
+        item.sender === 'You' ? styles.sentMessage : styles.receivedMessage,
+      ]}
+    >
+      <Text style={styles.senderName}>{item.sender}</Text>
+      <Text style={styles.messageText}>{item.text}</Text>
+      <Text style={styles.timestamp}>{item.timestamp}</Text>
+    </View>
+  );
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+      <View style={styles.chatHeader}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Text style={styles.backButtonText}>⬅</Text>
+        </TouchableOpacity>
+        <Text style={styles.chatHeaderTitle}>
+          {chatName} {chatType === 'group' ? '👥' : '💬'}
+        </Text>
+      </View>
+      {typing && <Text style={styles.typingText}>Typing...</Text>}
+      <FlatList
+        data={messages}
+        keyExtractor={(item) => item.id}
+        renderItem={renderMessage}
+        contentContainerStyle={styles.messagesContainer}
+      />
+      <View style={styles.inputContainer}>
+        <TouchableOpacity onPress={pickImage} style={styles.photoButton}>
+          <Text style={styles.photoButtonText}>📷</Text>
+        </TouchableOpacity>
+        <TextInput
+          style={styles.input}
+          value={newMessage}
+          onChangeText={(text) => {
+            setNewMessage(text);
+            setTyping(true);
+          }}
+          placeholder="Type a message..."
+          placeholderTextColor="#bbb"
+        />
+        <TouchableOpacity style={styles.sendButton} onPress={onSend}>
+          <Text style={styles.sendButtonText}>Send</Text>
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
+  );
+}
+
+// Main App
+export default function App() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="ChatListScreen" component={ChatListScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="ChatScreen" component={ChatScreen} options={{ headerShown: false }} />
+    </Stack.Navigator>
+  );
+}
+
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: '#121212',
+    backgroundColor: '#000',
   },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    color: '#ffffff',
+  searchBar: {
+    backgroundColor: '#292D3E',
+    padding: 10,
+    margin: 20,
+    borderRadius: 10,
+    color: '#fff',
   },
-  messageCard: {
-    padding: 16,
-    backgroundColor: '#1e1e1e',
-    borderRadius: 8,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  unread: {
-    backgroundColor: '#333333',
-  },
-  messageHeader: {
+  chatItem: {
+    padding: 20,
+    backgroundColor: '#292D3E',
+    borderRadius: 10,
+    marginHorizontal: 20,
+    marginBottom: 15,
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
   },
-  unreadDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#ff3b30', // Red color for unread indicator
-  },
-  messageSender: {
-    fontWeight: 'bold',
-    marginBottom: 4,
-    color: '#ffffff',
-  },
-  messagePreview: {
-    color: '#b0b0b0',
-  },
-  messageTimestamp: {
-    fontSize: 12,
-    color: '#777',
-    marginTop: 5,
-  },
-  composeButton: {
-    backgroundColor: '#1e88e5',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  composeButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  composeContainer: {
-    backgroundColor: '#1e1e1e',
-    padding: 16,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-    marginBottom: 16,
-  },
-  textInput: {
-    height: 100,
-    borderColor: '#444444',
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 10,
-    textAlignVertical: 'top',
-    color: '#ffffff',
-  },
-  sendButton: {
-    backgroundColor: '#43a047',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  sendButtonText: {
-    color: '#ffffff',
-    fontWeight: 'bold',
-  },
-  searchInput: {
-    borderColor: '#444444',
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 16,
-    backgroundColor: '#1e1e1e',
-    color: '#ffffff',
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-  },
-  modalContent: {
-    backgroundColor: '#1e1e1e',
-    padding: 20,
-    borderRadius: 8,
-    width: '80%',
-    alignItems: 'center',
-  },
-  modalHeader: {
+  chatName: {
+    color: '#fff',
     fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#ffffff',
+    fontWeight: '600',
   },
-  modalBody: {
-    fontSize: 16,
-    marginBottom: 20,
-    color: '#b0b0b0',
+  unreadBadge: {
+    backgroundColor: '#FF6F61',
+    borderRadius: 15,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
   },
-  modalTimestamp: {
-    fontSize: 14,
-    color: '#999',
-    marginTop: 10,
-  },
-  closeButton: {
-    backgroundColor: '#1e88e5',
-    padding: 10,
-    borderRadius: 8,
-  },
-  closeButtonText: {
-    color: '#ffffff',
-    fontWeight: 'bold',
-  },
-  deleteButton: {
-    backgroundColor: '#e53935',
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 10,
-  },
-  deleteButtonText: {
+  unreadText: {
     color: '#fff',
     fontWeight: 'bold',
   },
+  chatHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#292D3E',
+    padding: 15,
+  },
+  backButton: {
+    marginRight: 15,
+  },
+  backButtonText: {
+    fontSize: 18,
+    color: '#fff',
+  },
+  chatHeaderTitle: {
+    fontSize: 20,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  messagesContainer: {
+    paddingHorizontal: 10,
+    paddingVertical: 20,
+  },
+  messageContainer: {
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  sentMessage: {
+    backgroundColor: '#34B7F1',
+    alignSelf: 'flex-end',
+  },
+  receivedMessage: {
+    backgroundColor: '#444',
+    alignSelf: 'flex-start',
+  },
+  senderName: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 12,
+  },
+  messageText: {
+    color: '#fff',
+  },
+  timestamp: {
+    fontSize: 10,
+    color: '#bbb',
+    marginTop: 5,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    padding: 10,
+    backgroundColor: '#292D3E',
+  },
+  input: {
+    flex: 1,
+    backgroundColor: '#444',
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    color: '#fff',
+  },
+  sendButton: {
+    marginLeft: 10,
+    backgroundColor: '#34B7F1',
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    justifyContent: 'center',
+  },
+  sendButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  photoButton: {
+    padding: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  photoButtonText: {
+    fontSize: 20,
+    color: '#fff',
+  },
+  typingText: {
+    color: '#bbb',
+    marginLeft: 20,
+    fontStyle: 'italic',
+  },
 });
-
-export default CommunicationTools;
