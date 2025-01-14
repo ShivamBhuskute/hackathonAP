@@ -49,7 +49,7 @@ export default function App() {
   };
 
   const sendCertificate = () => {
-    Alert.alert('Certificate Sent', The certificate for ${name} has been sent successfully.);
+    Alert.alert('Certificate Sent', `The certificate for ${name} has been sent successfully.`);
     setShowCertificate(false);
   };
 
@@ -65,14 +65,14 @@ export default function App() {
         color: rgb(1, 1, 1),
       });
 
-      page.drawText(This award is given to ${certificateData?.name}, {
+      page.drawText(`This award is given to ${certificateData?.name}`, {
         x: 180,
         y: 650,
         fontSize: 18,
         color: rgb(1, 1, 1), 
       });
 
-      page.drawText(This is to certify that ${certificateData?.name} has actively participated in the ${certificateData?.eventName} event held on ${certificateData?.date}, {
+      page.drawText(`This is to certify that ${certificateData?.name} has actively participated in the ${certificateData?.eventName} event held on ${certificateData?.date}`, {
         x: 50,
         y: 600,
         fontSize: 14,
@@ -178,7 +178,7 @@ export default function App() {
             <Text style={[styles.text, styles.header]}>Certificate of Recognition</Text>
             <Text style={[styles.text, styles.subHeader]}>This award is given to</Text>
             <Text style={[styles.text, styles.name]}>{certificateData?.name}</Text>
-            <Text style={[styles.text, styles.body]}>{This is to certify that ${certificateData?.name} has actively participated in the ${certificateData?.eventName} event held on ${certificateData?.date}.}</Text>
+            <Text style={[styles.text, styles.body]}>{`This is to certify that ${certificateData?.name} has actively participated in the ${certificateData?.eventName} event held on ${certificateData?.date}.`}</Text>
             <Text style={[styles.text, styles.footer]} >
               Your dedication and contribution to the event are highly appreciated, and we commend your enthusiasm and efforts.
             </Text>
@@ -334,6 +334,8 @@ const styles = StyleSheet.create({
   errorMessage: {
     color: 'red',
     fontSize: 14,
-    marginVertical: 10,
-  },
+    marginVertical: 10,
+  },
 });
+
+
