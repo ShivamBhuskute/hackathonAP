@@ -12,7 +12,11 @@ import {
     Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { createDrawerNavigator } from "@react-navigation/drawer";
+import {
+    createDrawerNavigator,
+    navigation,
+    navigate,
+} from "@react-navigation/drawer";
 import { Calendar } from "react-native-calendars";
 import { BarChart, PieChart } from "react-native-chart-kit";
 import { db } from "./src/firebase";
@@ -22,7 +26,9 @@ import {
     where,
     getCountFromServer,
     getDocs,
+    addDoc,
 } from "firebase/firestore";
+import eventTaskAssignment from "./eventTaskAssignment";
 
 // Import other screens
 import CreateEvent from "./CreateEvent";
@@ -38,8 +44,16 @@ import EventDescription from "./EventDescription";
 
 const { width } = Dimensions.get("window");
 
-const EventManagerDashboard = ({ route }) => {
+const EventManagerDashboard = ({ route, navigation }) => {
     const [isCalendarModalVisible, setIsCalendarModalVisible] = useState(false);
+    const [isEventFormVisible, setIsEventFormVisible] = useState(false);
+    const [newEvent, setNewEvent] = useState({
+        eventName: "",
+        eventId: "",
+        description: "",
+        status: "upcoming",
+        date: "",
+    });
     const [isEventDetailsVisible, setIsEventDetailsVisible] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [selectedDate, setSelectedDate] = useState("");
@@ -57,6 +71,9 @@ const EventManagerDashboard = ({ route }) => {
             },
         ],
     });
+    const [ongoingEvents, setOngoingEvents] = useState([]);
+    const [isTaskModalVisible, setIsTaskModalVisible] = useState(false);
+    const [selectedOngoingEvent, setSelectedOngoingEvent] = useState(null);
 
     const { universityId, managerId } = route.params || {};
 
@@ -72,6 +89,7 @@ const EventManagerDashboard = ({ route }) => {
             fetchCompletedEvents(universityId); // for completed events
             fetchUpcomingEvents(universityId); // for list
             fetchChartData(); // for chart
+            fetchOngoingEvents();
         }
     }, [universityId]);
 
@@ -184,6 +202,44 @@ const EventManagerDashboard = ({ route }) => {
             });
         } catch (error) {
             console.error("Error fetching chart data:", error);
+        }
+    };
+
+    const handleCreateEvent = async () => {
+        try {
+            await addDoc(collection(db, "events"), {
+                ...newEvent,
+                universityId: universityId,
+                managerId: managerId,
+            });
+            Alert.alert("Success", "Event created successfully!");
+            setIsEventFormVisible(false);
+            setIsCalendarModalVisible(false);
+        } catch (error) {
+            Alert.alert("Error", "Failed to create event");
+        }
+    };
+
+    const fetchOngoingEvents = async () => {
+        try {
+            const eventsRef = collection(db, "events");
+            const q = query(
+                eventsRef,
+                where("universityId", "==", universityId),
+                where("status", "==", "ongoing")
+            );
+            const querySnapshot = await getDocs(q);
+
+            const eventsData = [];
+            querySnapshot.forEach((doc) => {
+                eventsData.push({
+                    id: doc.id,
+                    ...doc.data(),
+                });
+            });
+            setOngoingEvents(eventsData);
+        } catch (error) {
+            console.error("Error fetching ongoing events:", error);
         }
     };
 
@@ -333,77 +389,82 @@ const EventManagerDashboard = ({ route }) => {
                     />
                 </View>
 
-                {/* Tasks Section */}
-                {/* <Text style={styles.sectionTitle}>Tasks</Text>
-                <FlatList
-                    data={tasks}
-                    keyExtractor={(item) => item.id}
-                    renderItem={({ item }) => (
-                        <View style={styles.taskCard}>
-                            <Text style={styles.taskText}>{item.task}</Text>
-                            <Text style={styles.taskStatus}>{item.status}</Text>
+                <Text style={styles.sectionTitle}>Ongoing Events</Text>
+                <View style={styles.cardContainer}>
+                    <FlatList
+                        data={ongoingEvents}
+                        keyExtractor={(item) => item.id}
+                        renderItem={({ item }) => (
                             <TouchableOpacity
                                 onPress={() => {
-                                    const updatedTasks = tasks.map((t) =>
-                                        t.id === item.id
-                                            ? { ...t, status: "Completed" }
-                                            : t
-                                    );
-                                    setTasks(updatedTasks);
+                                    setSelectedOngoingEvent(item);
+                                    setIsTaskModalVisible(true);
                                 }}
+                                style={styles.eventCard}
                             >
-                                <Text style={styles.completeTaskButton}>
-                                    Mark as Completed
+                                <Text style={styles.eventTitle}>
+                                    {item.eventName}
+                                </Text>
+                                <Text style={styles.eventStatus}>
+                                    Status: {item.status}
                                 </Text>
                             </TouchableOpacity>
-                        </View>
-                    )}
-                /> */}
+                        )}
+                    />
+                </View>
 
-                {/* Notifications Section */}
-                {/* <Text style={styles.sectionTitle}>Notifications</Text>
-                <FlatList
-                    data={notifications}
-                    keyExtractor={(item) => item.id}
-                    renderItem={({ item }) => (
-                        <View style={styles.notificationCard}>
-                            <Text style={styles.notificationMessage}>
-                                {item.message}
+                {/* Add this Modal for task options */}
+                <Modal
+                    visible={isTaskModalVisible}
+                    transparent
+                    animationType="slide"
+                    onRequestClose={() => setIsTaskModalVisible(false)}
+                >
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
+                            <Text style={styles.modalTitle}>
+                                {selectedOngoingEvent?.eventName}
                             </Text>
-                            <Text style={styles.notificationTime}>
-                                {item.time}
-                            </Text>
-                        </View>
-                    )}
-                /> */}
 
-                {/* Chart Section */}
-                {/* <Text style={styles.sectionTitle}>Registrations Over Time</Text>
-                <BarChart
-                    style={styles.chart}
-                    data={chartData}
-                    width={width - 40} // Responsive width
-                    height={220}
-                    yAxisLabel=""
-                    chartConfig={{
-                        backgroundColor: "#1C1C1C",
-                        backgroundGradientFrom: "#1C1C1C",
-                        backgroundGradientTo: "#1C1C1C",
-                        decimalPlaces: 0,
-                        color: (opacity = 1) =>
-                            `rgba(255, 255, 255, ${opacity})`,
-                        labelColor: (opacity = 1) =>
-                            `rgba(255, 255, 255, ${opacity})`,
-                        style: {
-                            borderRadius: 16,
-                        },
-                        propsForDots: {
-                            r: "6",
-                            strokeWidth: "2",
-                            stroke: "#FFD700",
-                        },
-                    }}
-                /> */}
+                            <TouchableOpacity
+                                style={styles.modalButton}
+                                onPress={() => {
+                                    navigation.navigate("eventTaskAssignment", {
+                                        eventId: selectedOngoingEvent?.id,
+                                        universityId: universityId,
+                                        managerId: managerId,
+                                    });
+                                    setIsTaskModalVisible(false);
+                                }}
+                            >
+                                <Text style={styles.buttonText}>
+                                    Assign Tasks
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={styles.modalButton}
+                                onPress={() => {
+                                    navigation.navigate("EventDetails", {
+                                        eventId: selectedOngoingEvent?.id,
+                                    });
+                                    setIsTaskModalVisible(false);
+                                }}
+                            >
+                                <Text style={styles.buttonText}>
+                                    View Details
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={styles.cancelButton}
+                                onPress={() => setIsTaskModalVisible(false)}
+                            >
+                                <Text style={styles.buttonText}>Cancel</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>
 
                 <BarChart
                     style={styles.chart}
@@ -428,38 +489,9 @@ const EventManagerDashboard = ({ route }) => {
                             strokeWidth: "2",
                             stroke: "#FFD700",
                         },
-                    }} 
+                    }}
                 />
 
-                {/* Pie Chart for Task Completion */}
-                {/* <Text style={styles.sectionTitle}>
-                    Task Completion Overview
-                </Text>
-                <View style={styles.pieChartContainer}>
-                    <PieChart
-                        data={taskCompletionData}
-                        width={width - 40} // Responsive width
-                        height={220}
-                        chartConfig={{
-                            backgroundColor: "#1C1C1C",
-                            backgroundGradientFrom: "#1C1C1C",
-                            backgroundGradientTo: "#1C1C1C",
-                            color: (opacity = 1) =>
-                                `rgba(255, 255, 255, ${opacity})`,
-                            labelColor: (opacity = 1) =>
-                                `rgba(255, 255, 255, ${opacity})`,
-                            style: {
-                                borderRadius: 16,
-                            },
-                        }}
-                        accessor="population"
-                        backgroundColor="transparent"
-                        paddingLeft="15"
-                        absolute
-                    />
-                </View> */}
-
-                {/* Event Details Modal */}
                 <Modal
                     visible={isEventDetailsVisible}
                     transparent
@@ -497,23 +529,6 @@ const EventManagerDashboard = ({ route }) => {
                         </View>
                     </View>
                 </Modal>
-
-                {/* User Feedback Section */}
-                {/* <Text style={styles.sectionTitle}>User  Feedback</Text>
-        <View style={styles.feedbackCard}>
-          <Text style={styles.feedbackText}>We value your feedback! Please let us know your thoughts about our events.</Text>
-          <TextInput
-            style={styles.feedbackInput}
-            placeholder="Type your feedback here..."
-            placeholderTextColor="#888"
-            multiline
-          />
-          <TouchableOpacity style={styles.submitButton}>
-            <Text style={styles.submitButtonText}>Submit Feedback</Text>
-          </TouchableOpacity>
-        </View> */}
-
-                {/* More Events Section */}
             </ScrollView>
 
             {/* Calendar Button */}
@@ -522,7 +537,7 @@ const EventManagerDashboard = ({ route }) => {
                 onPress={() => setIsCalendarModalVisible(true)}
             >
                 <Ionicons name="calendar" size={24} color="#FFF" />
-                <Text style={styles.calendarButtonText}>Open Calendar</Text>
+                <Text style={styles.calendarButtonText}>Create events</Text>
             </TouchableOpacity>
 
             {/* Calendar Modal */}
@@ -534,35 +549,124 @@ const EventManagerDashboard = ({ route }) => {
             >
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
-                        <Calendar
-                            onDayPress={(day) => {
-                                setSelectedDate(day.dateString);
-                                setIsCalendarModalVisible(false);
-                            }}
-                            markedDates={{
-                                [selectedDate]: {
-                                    selected: true,
-                                    marked: true,
-                                    selectedColor: "#FFD700",
-                                },
-                            }}
-                            theme={{
-                                calendarBackground: "#333",
-                                textSectionTitleColor: "#FFF",
-                                selectedDayBackgroundColor: "#FFD700",
-                                selectedDayTextColor: "#FFF",
-                                todayTextColor: "#FFD700",
-                                dayTextColor: "#FFF",
-                                textDisabledColor: "#555",
-                                monthTextColor: "#FFD700",
-                            }}
-                        />
-                        <TouchableOpacity
-                            style={styles.closeButton}
-                            onPress={() => setIsCalendarModalVisible(false)}
-                        >
-                            <Text style={styles.closeButtonText}>Close</Text>
-                        </TouchableOpacity>
+                        {!isEventFormVisible ? (
+                            <>
+                                <Calendar
+                                    onDayPress={(day) => {
+                                        setNewEvent((prev) => ({
+                                            ...prev,
+                                            date: day.dateString,
+                                        }));
+                                        setSelectedDate(day.dateString);
+                                        setIsEventFormVisible(true);
+                                    }}
+                                    markedDates={{
+                                        [selectedDate]: {
+                                            selected: true,
+                                            marked: true,
+                                            selectedColor: "#FFD700",
+                                        },
+                                    }}
+                                    theme={{
+                                        calendarBackground: "#333",
+                                        textSectionTitleColor: "#FFF",
+                                        selectedDayBackgroundColor: "#FFD700",
+                                        selectedDayTextColor: "#FFF",
+                                        todayTextColor: "#FFD700",
+                                        dayTextColor: "#FFF",
+                                        textDisabledColor: "#555",
+                                        monthTextColor: "#FFD700",
+                                    }}
+                                />
+                                <TouchableOpacity
+                                    style={styles.closeButton}
+                                    onPress={() =>
+                                        setIsCalendarModalVisible(false)
+                                    }
+                                >
+                                    <Text style={styles.closeButtonText}>
+                                        Close
+                                    </Text>
+                                </TouchableOpacity>
+                            </>
+                        ) : (
+                            <View>
+                                <Text style={styles.modalTitle}>
+                                    Create Event
+                                </Text>
+                                <Text style={styles.modalSubtitle}>
+                                    Date: {selectedDate}
+                                </Text>
+
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Event Name"
+                                    placeholderTextColor="#888"
+                                    value={newEvent.eventName}
+                                    onChangeText={(text) =>
+                                        setNewEvent((prev) => ({
+                                            ...prev,
+                                            eventName: text,
+                                        }))
+                                    }
+                                />
+
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Event ID"
+                                    placeholderTextColor="#888"
+                                    value={newEvent.eventId}
+                                    onChangeText={(text) =>
+                                        setNewEvent((prev) => ({
+                                            ...prev,
+                                            eventId: text,
+                                        }))
+                                    }
+                                />
+
+                                <TextInput
+                                    style={[styles.input, styles.textArea]}
+                                    placeholder="Description"
+                                    placeholderTextColor="#888"
+                                    multiline
+                                    value={newEvent.description}
+                                    onChangeText={(text) =>
+                                        setNewEvent((prev) => ({
+                                            ...prev,
+                                            description: text,
+                                        }))
+                                    }
+                                />
+
+                                <View style={styles.buttonContainer}>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.button,
+                                            styles.submitButton,
+                                        ]}
+                                        onPress={handleCreateEvent}
+                                    >
+                                        <Text style={styles.buttonText}>
+                                            Create Event
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.button,
+                                            styles.cancelButton,
+                                        ]}
+                                        onPress={() =>
+                                            setIsEventFormVisible(false)
+                                        }
+                                    >
+                                        <Text style={styles.buttonText}>
+                                            Back
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        )}
                     </View>
                 </View>
             </Modal>
@@ -984,6 +1088,66 @@ const styles = StyleSheet.create({
     closeButtonText: {
         color: "#FFF", // White font color
         fontSize: 16,
+    },
+    input: {
+        backgroundColor: "#444",
+        padding: 12,
+        borderRadius: 8,
+        color: "#FFF",
+        marginBottom: 16,
+        fontSize: 16,
+    },
+    textArea: {
+        height: 100,
+        textAlignVertical: "top",
+    },
+    modalTitle: {
+        fontSize: 24,
+        color: "#FFF",
+        fontWeight: "bold",
+        marginBottom: 8,
+    },
+    modalSubtitle: {
+        fontSize: 16,
+        color: "#888",
+        marginBottom: 20,
+    },
+    buttonContainer: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginTop: 20,
+    },
+    button: {
+        padding: 12,
+        borderRadius: 8,
+        width: "48%",
+    },
+    submitButton: {
+        backgroundColor: "#1E90FF",
+    },
+    cancelButton: {
+        backgroundColor: "#444",
+    },
+    buttonText: {
+        color: "#FFF",
+        fontSize: 16,
+        textAlign: "center",
+        fontWeight: "bold",
+    },
+    modalButton: {
+        backgroundColor: "#1E90FF",
+        padding: 12,
+        borderRadius: 8,
+        marginBottom: 10,
+        width: "100%",
+        alignItems: "center",
+    },
+    modalTitle: {
+        fontSize: 20,
+        color: "#FFF",
+        fontWeight: "bold",
+        marginBottom: 20,
+        textAlign: "center",
     },
 });
 
