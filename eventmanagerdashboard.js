@@ -241,26 +241,8 @@ const EventManagerDashboard = ({ route, navigation }) => {
         } catch (error) {
             console.error("Error fetching ongoing events:", error);
         }
-    };
+    };  
 
-    // const [events, setEvents] = useState([
-    //     {
-    //         id: "1",
-    //         title: "Tech Fest 2025",
-    //         date: "2025-01-20",
-    //         status: "Upcoming",
-    //         description: "A technology festival with various speakers.",
-    //         location: "Convention Center",
-    //     },
-    //     {
-    //         id: "2",
-    //         title: "Sports Day",
-    //         date: "2025-01-25",
-    //         status: "Completed",
-    //         description: "A day filled with sports activities.",
-    //         location: "City Stadium",
-    //     },
-    // ]);
     const [notifications, setNotifications] = useState([
         {
             id: "1",

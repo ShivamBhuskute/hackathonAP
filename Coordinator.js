@@ -20,6 +20,7 @@ export default function CoordinatorRegistration() {
     const [password, setPassword] = useState("");
     const [coordinatorId, setCoordinatorId] = useState("");
     const [universityId, setUniversityId] = useState("");
+    const [coordinatorRole, setCoordinatorRole] = useState("");
 
     const isValidEmail = (email) => {
         const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -54,13 +55,22 @@ export default function CoordinatorRegistration() {
                 name: coordinatorName,
                 email: email,
                 universityId: universityId,
+                coordinatorRole: coordinatorRole,
             });
 
             Alert.alert("Success", "Registration completed successfully.", [
                 {
                     text: "OK",
-                    onPress: () => navigation.navigate("CoordinatorsDashboard"),
+                    onPress: () =>
+                        navigation.navigate("CoordinatorsDashboard", {
+                            screen: "Dashboard",
+                            params: {
+                                coordinatorId: coordinatorId,
+                                universityId: universityId,
+                            },
+                        }),
                 },
+                console.log(coordinatorId, universityId),
             ]);
         } catch (error) {
             Alert.alert("Error", error.message);
@@ -87,6 +97,13 @@ export default function CoordinatorRegistration() {
                     value={email}
                     keyboardType="email-address"
                     onChangeText={setEmail}
+                />
+
+                <Text style={styles.label}>Coordinator role</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Enter role"
+                    onChangeText={setCoordinatorRole}
                 />
 
                 <Text style={styles.label}>Password</Text>

@@ -211,41 +211,7 @@ const Dashboard = ({ route, navigation }) => {
         }
     };
 
-    // Modal for registration confirmation
-    // const RegistrationForm = ({ event }) => (
-    //     <Modal
-    //         animationType="slide"
-    //         transparent={true}
-    //         visible={modalVisible}
-    //         onRequestClose={() => setModalVisible(false)}
-    //     >
-    //         <View style={styles.modalContainer}>
-    //             <View style={styles.modalContent}>
-    //                 <Text style={styles.modalTitle}>Event Registration</Text>
-    //                 <Text style={styles.modalEventName}>{event?.name}</Text>
-    //                 <Text style={styles.modalDescription}>
-    //                     {event?.description}
-    //                 </Text>
-
-    //                 <TouchableOpacity
-    //                     style={styles.confirmButton}
-    //                     onPress={() => handleRegister(event.id)}
-    //                 >
-    //                     <Text style={styles.buttonText}>
-    //                         Confirm Registration
-    //                     </Text>
-    //                 </TouchableOpacity>
-
-    //                 <TouchableOpacity
-    //                     style={styles.cancelButton}
-    //                     onPress={() => setModalVisible(false)}
-    //                 >
-    //                     <Text style={styles.buttonText}>Cancel</Text>
-    //                 </TouchableOpacity>
-    //             </View>
-    //         </View>
-    //     </Modal>
-    // );
+    
     const RegistrationForm = ({ event }) => {
         const [formData, setFormData] = useState({
             studentId: "",
@@ -429,6 +395,7 @@ const Dashboard = ({ route, navigation }) => {
                                 onPress={() => {
                                     setSelectedEvent(event);
                                     setModalVisible(true);
+                                    handleRegister()
                                 }}
                             >
                                 <Text style={styles.buttonText}>Register</Text>

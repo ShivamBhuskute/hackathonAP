@@ -147,17 +147,16 @@ export default function LoginPage({ navigation }) {
                                     universityId: universityId,
                                 },
                             });
-                            // console.log("Navigating with:", {
-                            //     studentId: id,
-                            //     universityId: universityId,
-                            // });
                             break;
                         case "coordinator":
                             navigation.navigate("CoordinatorsDashboard", {
-                                coordinatorId: id,
-                                universityId: universityId,
+                                screen: "Dashboard",
+                                params: {
+                                    coordinatorId: id,
+                                    universityId: universityId,
+                                },
                             });
-                            break; 
+                            break;
                         case "eventManager":
                             navigation.navigate("eventmanagerdashboard", {
                                 screen: "EventManagerDashboard",
@@ -168,9 +167,9 @@ export default function LoginPage({ navigation }) {
                                 },
                             });
                             console.log("Navigating with:", {
-                              managerId: id,
-                              universityId: universityId,
-                          });
+                                managerId: id,
+                                universityId: universityId,
+                            });
                             break;
                         case "admin":
                             navigation.navigate("UniversityDashboard", {
