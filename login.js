@@ -246,7 +246,7 @@ export default function LoginPage({ navigation }) {
 
             {/* Title with animation */}
             <Animated.Text style={[styles.title, { opacity: fadeAnim }]}>
-                EventHub
+                Evento
             </Animated.Text>
 
             <View style={styles.pickerContainer}>

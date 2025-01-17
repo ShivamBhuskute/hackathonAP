@@ -22,7 +22,7 @@ import {
     TextInput,
     Alert,
 } from "react-native";
-import { white } from "react-native-paper/lib/typescript/styles/themes/v2/colors";
+// import AttendanceScanner from "./AttendanceScanner";
 
 // Sidebar menu content
 const SidebarMenu = ({ navigation }) => {
@@ -422,7 +422,7 @@ const Dashboard = ({ navigation, route }) => {
             <TouchableOpacity
                 style={styles.scanButton}
                 onPress={() =>
-                    navigation.navigate("CoordinatorAttendanceScanner", {
+                    navigation.navigate("CreateEvent", {
                         coordinatorId: coordinatorId,
                         universityId: universityId,
                     })
@@ -486,7 +486,15 @@ function CoordinatorsDashboard() {
                     coordinatorId: "",
                     universityId: "",
                 }}
-            />
+            /> 
+            {/* <Drawer.Screen
+                name="AttendanceScanner"
+                component={AttendanceScanner}
+                initialParams={{
+                    coordinatorId: "",
+                    universityId: "",
+                }}
+            /> */}
             <Drawer.Screen name="Certificates" component={Certificates} />
             <Drawer.Screen name="Analytics" component={Analytics} />
         </Drawer.Navigator>
@@ -495,7 +503,7 @@ function CoordinatorsDashboard() {
 
 const styles = StyleSheet.create({
     buttonText: {
-        color: "white"
+        color: "white",
     },
     sidebarContainer: {
         flex: 1,

@@ -67,7 +67,7 @@ export default function WelcomePage({ navigation }) {
 
       {/* Interactive Buttons */}
       <TouchableOpacity style={styles.button} onPress={handleNext}>
-        <Text style={styles.buttonText}>Select a role to sign in...</Text>
+        <Text style={styles.buttonText}>Select a role to sign up...</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={handleLogin}>
         <Text style={styles.loginText}>Already have an account? Login</Text>

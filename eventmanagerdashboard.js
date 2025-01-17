@@ -430,7 +430,7 @@ const EventManagerDashboard = ({ route, navigation }) => {
                                         eventId: selectedOngoingEvent?.id,
                                         universityId: universityId,
                                         managerId: managerId,
-                                        eventName: eventName
+                                        // eventName: eventName
                                     });
                                     setIsTaskModalVisible(false);
                                 }}
