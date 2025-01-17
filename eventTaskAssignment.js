@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
     View,
     Text,
@@ -22,6 +22,7 @@ import {
     deleteDoc,
 } from "firebase/firestore";
 import { db } from "./src/firebase";
+import QRCode from "react-native-qrcode-svg";
 
 // Get screen dimensions for responsiveness
 const { width, height } = Dimensions.get("window");
@@ -38,8 +39,13 @@ const TaskManager = ({ route }) => {
     const [searchQuery, setSearchQuery] = useState("");
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
+    const [qrData, setQrData] = useState("");
+    const [qrModalVisible, setQrModalVisible] = useState(false);
+    const [selectedEvent, setSelectedEvent] = useState(null);
 
-    const { eventId, universityId, managerId } = route.params;
+    const svgRef = useRef();
+
+    const { eventId, universityId, managerId, eventName } = route.params;
     console.log("University ID:", universityId); // Debug log
     console.log("Manager ID:", managerId);
     console.log("Manager ID:", eventId);
@@ -50,12 +56,25 @@ const TaskManager = ({ route }) => {
         }
     }, [eventId]);
 
-    const saveTasks = async (tasksToSave) => {
-        try {
-            await AsyncStorage.setItem("tasks", JSON.stringify(tasksToSave));
-        } catch (error) {
-            Alert.alert("Error", "Failed to save tasks.");
-        }
+    // const saveTasks = async (tasksToSave) => {
+    //     try {
+    //         await AsyncStorage.setItem("tasks", JSON.stringify(tasksToSave));
+    //     } catch (error) {
+    //         Alert.alert("Error", "Failed to save tasks.");
+    //     }
+    // };
+
+    const generateQRCode = (event) => {
+        const qrData = {
+            eventId: eventId,
+            eventName: eventName,
+            timestamp: new Date().toISOString(),
+            type: "coordinator",
+        };
+
+        setQrData(JSON.stringify(qrData));
+        setSelectedEvent(event);
+        setQrModalVisible(true);
     };
 
     const fetchTasks = async (eventId) => {
@@ -174,7 +193,6 @@ const TaskManager = ({ route }) => {
     return (
         <View style={styles.container}>
             <Text style={styles.heading}>Task Manager</Text>
-
             <TextInput
                 style={styles.searchInput}
                 placeholder="Search tasks..."
@@ -182,7 +200,6 @@ const TaskManager = ({ route }) => {
                 value={searchQuery}
                 onChangeText={setSearchQuery}
             />
-
             <Text style={styles.subHeading}>Task List</Text>
             {tasks.length === 0 ? (
                 <Text style={styles.noTasks}>No tasks available</Text>
@@ -211,14 +228,12 @@ const TaskManager = ({ route }) => {
                     )}
                 />
             )}
-
             <TouchableOpacity
                 style={styles.addButtonBlue}
                 onPress={() => setIsModalVisible(true)}
             >
                 <Text style={styles.addButtonText}>Add Task</Text>
             </TouchableOpacity>
-
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -296,7 +311,61 @@ const TaskManager = ({ route }) => {
                     </View>
                 </View>
             </Modal>
+            <TouchableOpacity
+                style={styles.qrButton}
+                onPress={() => generateQRCode()}
+            >
+                <Text style={styles.qrButtonText}>Generate Attendance QR</Text>
+            </TouchableOpacity>
+            // Add this Modal component
+            <Modal
+                visible={qrModalVisible}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setQrModalVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>
+                            Attendance QR Code
+                        </Text>
 
+                        <QRCode value={qrData} size={200} getRef={svgRef} />
+
+                        <TouchableOpacity
+                            style={styles.saveButton}
+                            onPress={() => {
+                                if (svgRef.current) {
+                                    svgRef.current.toDataURL((data) => {
+                                        const fileUri =
+                                            FileSystem.documentDirectory +
+                                            `${selectedEvent.eventName}_QR.png`;
+                                        FileSystem.writeAsStringAsync(
+                                            fileUri,
+                                            data,
+                                            {
+                                                encoding:
+                                                    FileSystem.EncodingType
+                                                        .Base64,
+                                            }
+                                        ).then(() => {
+                                            Sharing.shareAsync(fileUri);
+                                        });
+                                    });
+                                }
+                            }}
+                        >
+                        <Text style={styles.buttonText}>Save QR Code</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.closeButton}
+                            onPress={() => setQrModalVisible(false)}
+                        >
+                            <Text style={styles.saveButton}>Close</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -344,6 +413,26 @@ const TaskManager = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
+    qrButton: {
+        backgroundColor: "#4CAF50",
+        padding: 10,
+        borderRadius: 8,
+        marginTop: 10,
+    },
+    qrButtonText: {
+        color: "#FFF",
+        fontSize: 14,
+        fontWeight: "bold",
+        textAlign: "center",
+    },
+    saveButton: {
+        backgroundColor: "#1E90FF",
+        padding: 12,
+        borderRadius: 8,
+        marginTop: 20,
+        width: "100%",
+        alignItems: "center",
+    },
     container: {
         flex: 1,
         padding: 10,

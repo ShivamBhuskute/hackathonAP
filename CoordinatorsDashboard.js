@@ -22,6 +22,7 @@ import {
     TextInput,
     Alert,
 } from "react-native";
+import { white } from "react-native-paper/lib/typescript/styles/themes/v2/colors";
 
 // Sidebar menu content
 const SidebarMenu = ({ navigation }) => {
@@ -54,7 +55,7 @@ const SidebarMenu = ({ navigation }) => {
             <TouchableOpacity
                 style={styles.menuItem}
                 onPress={() =>
-                    navigation.navigate("coordinatorCommunicationTool") 
+                    navigation.navigate("coordinatorCommunicationTool")
                 }
             >
                 <Ionicons name="chatbubble-ellipses" size={24} color="#FFF" />
@@ -202,7 +203,7 @@ const Dashboard = ({ navigation, route }) => {
                 where("universityId", "==", universityId),
                 where("coordinatorList", "array-contains", coordinatorId)
             );
-            const eventsSnapshot = await getDocs(eventsQuery);  
+            const eventsSnapshot = await getDocs(eventsQuery);
 
             // Get all event IDs that this coordinator manages
             const coordinatorEventIds = eventsSnapshot.docs.map(
@@ -418,6 +419,17 @@ const Dashboard = ({ navigation, route }) => {
                     </Text>
                 </View> */}
             </View>
+            <TouchableOpacity
+                style={styles.scanButton}
+                onPress={() =>
+                    navigation.navigate("CoordinatorAttendanceScanner", {
+                        coordinatorId: coordinatorId,
+                        universityId: universityId,
+                    })
+                }
+            >
+                <Text style={styles.buttonText}>Scan Attendance QR</Text>
+            </TouchableOpacity>
         </ScrollView>
     );
 };
@@ -433,7 +445,7 @@ const Registrations = () => (
         <Text>Registrations Screen</Text>
     </View>
 );
-const Attendance = () => ( 
+const Attendance = () => (
     <View>
         <Text>Attendance Screen</Text>
     </View>
@@ -482,6 +494,9 @@ function CoordinatorsDashboard() {
 }
 
 const styles = StyleSheet.create({
+    buttonText: {
+        color: "white"
+    },
     sidebarContainer: {
         flex: 1,
         backgroundColor: "#1E1E1E",

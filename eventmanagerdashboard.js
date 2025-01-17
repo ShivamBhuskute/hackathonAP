@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
     View,
     Text,
@@ -18,7 +18,7 @@ import {
     navigate,
 } from "@react-navigation/drawer";
 import { Calendar } from "react-native-calendars";
-import { BarChart, PieChart } from "react-native-chart-kit";
+import { BarChart } from "react-native-chart-kit";
 import { db } from "./src/firebase";
 import {
     collection,
@@ -75,12 +75,27 @@ const EventManagerDashboard = ({ route, navigation }) => {
     const [isTaskModalVisible, setIsTaskModalVisible] = useState(false);
     const [selectedOngoingEvent, setSelectedOngoingEvent] = useState(null);
 
+    
+
     const { universityId, managerId } = route.params || {};
 
+    // const generateQRCode = (event) => {
+    //     const qrData = {
+    //         eventId: event.id,
+    //         eventName: event.eventName,
+    //         timestamp: new Date().toISOString(),
+    //         type: "coordinator",
+    //     };
+
+    //     setQrData(JSON.stringify(qrData));
+    //     setSelectedEvent(event);
+    //     setQrModalVisible(true);
+    // };
+
     // console.log(universityId, managerId);
-    console.log("Route params:", route.params); // Check if params are being passed correctly
-    console.log("University ID:", universityId); // Debug log
-    console.log("Manager ID:", managerId);
+    // console.log("Route params:", route.params); // Check if params are being passed correctly
+    // console.log("University ID:", universityId); // Debug log
+    // console.log("Manager ID:", managerId);
 
     useEffect(() => {
         if (universityId) {
@@ -241,7 +256,7 @@ const EventManagerDashboard = ({ route, navigation }) => {
         } catch (error) {
             console.error("Error fetching ongoing events:", error);
         }
-    };  
+    };
 
     const [notifications, setNotifications] = useState([
         {
@@ -415,6 +430,7 @@ const EventManagerDashboard = ({ route, navigation }) => {
                                         eventId: selectedOngoingEvent?.id,
                                         universityId: universityId,
                                         managerId: managerId,
+                                        eventName: eventName
                                     });
                                     setIsTaskModalVisible(false);
                                 }}
@@ -512,7 +528,6 @@ const EventManagerDashboard = ({ route, navigation }) => {
                     </View>
                 </Modal>
             </ScrollView>
-
             {/* Calendar Button */}
             <TouchableOpacity
                 style={styles.calendarButton}
@@ -521,7 +536,6 @@ const EventManagerDashboard = ({ route, navigation }) => {
                 <Ionicons name="calendar" size={24} color="#FFF" />
                 <Text style={styles.calendarButtonText}>Create events</Text>
             </TouchableOpacity>
-
             {/* Calendar Modal */}
             <Modal
                 visible={isCalendarModalVisible}
@@ -652,6 +666,7 @@ const EventManagerDashboard = ({ route, navigation }) => {
                     </View>
                 </View>
             </Modal>
+            
         </View>
     );
 };

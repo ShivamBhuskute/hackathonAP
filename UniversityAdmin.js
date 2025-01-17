@@ -89,7 +89,12 @@ export default function UniversityAdminRegistration({ navigation }) {
             Alert.alert("Success", "Registration completed successfully.", [
                 {
                     text: "OK",
-                    onPress: () => navigation.navigate("UniversityDashboard"),
+                    onPress: () => navigation.navigate("UniversityDashboard", {
+                        screen: "Dashboard",
+                        params: {
+                            universityId: universityId
+                        }
+                    }),
                 },
             ]);
         } catch (error) {

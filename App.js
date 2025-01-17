@@ -15,6 +15,7 @@ import UniversityDashboard from "./UniversityDashboard";
 import StudentDashboardApp from "./StudentDashboardApp";
 import eventmanagerdashboard from "./eventmanagerdashboard";
 import evenntTaskAssignment from "./eventTaskAssignment";
+import CoordinatorAttendanceScanner from './CoordinatorAttendanceScanner'
 
 const Stack = createStackNavigator();
 
@@ -59,6 +60,10 @@ export default function App() {
                 <Stack.Screen
                     name="StudentDashboardApp"
                     component={StudentDashboardApp}
+                />
+                <Stack.Screen
+                    name="CoordinatorAttendanceScanner"
+                    component={CoordinatorAttendanceScanner}
                 />
             </Stack.Navigator>
         </NavigationContainer>
