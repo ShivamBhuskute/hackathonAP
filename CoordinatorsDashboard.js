@@ -22,7 +22,7 @@ import {
     TextInput,
     Alert,
 } from "react-native";
-// import AttendanceScanner from "./AttendanceScanner";
+import AttendanceScanner from "./AttendanceScanner"; // Add this import at the top
 
 // Sidebar menu content
 const SidebarMenu = ({ navigation }) => {
@@ -422,9 +422,12 @@ const Dashboard = ({ navigation, route }) => {
             <TouchableOpacity
                 style={styles.scanButton}
                 onPress={() =>
-                    navigation.navigate("CreateEvent", {
-                        coordinatorId: coordinatorId,
-                        universityId: universityId,
+                    navigation.navigate("AttendanceScanner", {
+                        screen: "AttendanceScanner",
+                        params: {
+                            coordinatorId: coordinatorId,
+                            universityId: universityId,
+                        },
                     })
                 }
             >
@@ -486,15 +489,15 @@ function CoordinatorsDashboard() {
                     coordinatorId: "",
                     universityId: "",
                 }}
-            /> 
-            {/* <Drawer.Screen
+            />
+            <Drawer.Screen
                 name="AttendanceScanner"
                 component={AttendanceScanner}
-                initialParams={{
-                    coordinatorId: "",
-                    universityId: "",
+                options={{
+                    headerShown: false,
+                    drawerItemStyle: { display: "none" },
                 }}
-            /> */}
+            />
             <Drawer.Screen name="Certificates" component={Certificates} />
             <Drawer.Screen name="Analytics" component={Analytics} />
         </Drawer.Navigator>

@@ -16,6 +16,7 @@ import StudentDashboardApp from "./StudentDashboardApp";
 import eventmanagerdashboard from "./eventmanagerdashboard";
 import evenntTaskAssignment from "./eventTaskAssignment";
 import AttendanceScanner from './AttendanceScanner'
+import PingChats from "./pingChats";
 
 const Stack = createStackNavigator();
 
@@ -61,10 +62,14 @@ export default function App() {
                     name="StudentDashboardApp"
                     component={StudentDashboardApp}
                 />
-                {/* <Stack.Screen
+                <Stack.Screen
                     name="AttendanceScanner"
                     component={AttendanceScanner}
-                /> */}
+                />
+                <Stack.Screen
+                name="pingChats"
+                component={PingChats}
+                />
             </Stack.Navigator>
         </NavigationContainer>
     );

@@ -1,62 +1,125 @@
-// import { Alert } from 'react-native';
-// import { useEffect } from 'react';
-// import { Camera, useCameraDevice } from 'react-native-vision-camera';
-// import { useCodeScanner } from 'react-native-vision-camera';
+import React, { useState, useEffect } from "react";
+import { Text, View, StyleSheet, Button } from "react-native";
+import { Camera, CameraType, useCameraPermissions } from "expo-camera";
+// import { CameraType } from "expo-image-picker";
 
-// const AttendanceScanner = ({ route, navigation }) => {
-//     const device = useCameraDevice('back');
-//     const [hasPermission, setHasPermission] = useState(false);
+export default function App() {
+    const [scanned, setScanned] = useState(false);
+    const [permission, requestPermission] = useCameraPermissions();
+
+    useEffect(() => {
+        requestPermission();
+    }, []);  
+
+    console.log(CameraType.Back);
     
-//     const codeScanner = useCodeScanner({
-//         codeTypes: ['qr'],
-//         onCodeScanned: async (codes) => {
-//             try {
-//                 const qrData = JSON.parse(codes[0].value);
-//                 await addDoc(collection(db, "attendance"), {
-//                     eventId: qrData.eventId,
-//                     coordinatorId: coordinatorId,
-//                     universityId: universityId,
-//                     timestamp: new Date().toISOString(),
-//                     status: 'present'
-//                 });
-//                 Alert.alert("Success", "Attendance marked successfully!");
-//             } catch (error) {
-//                 Alert.alert("Error", "Failed to mark attendance");
-//             }
-//         }
-//     });
+
+    const handleBarCodeScanned = ({ type, data }) => {
+        console.log("Barcode scanned:", type, data);
+        setScanned(true);
+        alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+    };
+    
+
+    if (!permission) {
+        return <Text>Requesting camera permission</Text>;
+    }
+
+    if (!permission.granted) {
+        return (
+            <View style={styles.container}>
+                <Text>No access to camera</Text>
+                <Button title="Grant Permission" onPress={requestPermission} />
+            </View>
+        );
+    }
+
+    return (
+        <View style={styles.container}>
+            <Camera
+                type={CameraType.Back}
+                style={StyleSheet.absoluteFillObject}
+                onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+            />
+            {scanned && (
+                <Button
+                    title={"Tap to Scan Again"}
+                    onPress={() => setScanned(false)}
+                />
+            )}
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+});
+
+
+
+// import { Camera, CameraView } from "expo-camera";
+// // import { Stack } from "expo-router";
+// import {
+//     AppState,
+//     Linking,
+//     Platform,
+//     SafeAreaView,
+//     StatusBar,
+//     StyleSheet,
+// } from "react-native";
+// // import { Overlay } from "./Overlay";
+// import { useEffect, useRef } from "react";
+
+// export default function Home() {
+//     const qrLock = useRef(false);
+//     const appState = useRef(AppState.currentState);
 
 //     useEffect(() => {
-//         checkPermission();
+//         const subscription = AppState.addEventListener(
+//             "change",
+//             (nextAppState) => {
+//                 if (
+//                     appState.current.match(/inactive|background/) &&
+//                     nextAppState === "active"
+//                 ) {
+//                     qrLock.current = false;
+//                 }
+//                 appState.current = nextAppState;
+//             }
+//         );
+
+//         return () => {
+//             subscription.remove();
+//         };
 //     }, []);
 
-//     const checkPermission = async () => {
-//         const permission = await Camera.requestCameraPermission();
-//         setHasPermission(permission === 'authorized');
-//     };
-
-//     if (!device || !hasPermission) {
-//         return (
-//             <View style={styles.container}>
-//                 <Text style={styles.overlayText}>No camera available</Text>
-//             </View>
-//         );
-//     }
-
 //     return (
-//         <View style={styles.container}>
-//             <Camera
-//                 style={StyleSheet.absoluteFill}
-//                 device={device}
-//                 isActive={true}
-//                 codeScanner={codeScanner}
+//         <SafeAreaView style={StyleSheet.absoluteFillObject}>
+//             <Stack.Screen
+//                 options={{
+//                     title: "Overview",
+//                     headerShown: false,
+//                 }}
 //             />
-//             <TouchableOpacity 
-//                 style={styles.cancelButton}
-//                 onPress={() => navigation.goBack()}
-//             >
-//                 <Text style={styles.buttonText}>Cancel</Text>
-//             </TouchableOpacity>
-//         </View>
+//             {Platform.OS === "android" ? <StatusBar hidden /> : null}
+//             <CameraView
+//                 style={StyleSheet.absoluteFillObject}
+//                 facing="back"
+//                 onBarcodeScanned={({ data }) => {
+//                     if (data && !qrLock.current) {
+//                         qrLock.current = true;
+//                         setTimeout(async () => {
+//                             await Linking.openURL(data);
+//                         }, 500);
+//                     }
+//                 }}
+//             />
+//             <Overlay />
+//         </SafeAreaView>
 //     );
-// };
+// }

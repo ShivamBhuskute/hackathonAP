@@ -6,13 +6,16 @@ import {
     TouchableOpacity,
     Animated,
     StyleSheet,
+    ScrollView,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { Picker } from "@react-native-picker/picker";
 import { commonStyles } from "./commonStyles";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { auth, db, signInWithEmailAndPassword } from "./src/firebase";
-import EventManagerDashboard from "./EventAttendance";
+// import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { GoogleAuthProvider, signInWithCredential } from "firebase/auth";
+// import EventManagerDashboard from "./EventAttendance";
 
 export default function LoginPage({ navigation }) {
     const [email, setEmail] = useState("");
@@ -100,6 +103,9 @@ export default function LoginPage({ navigation }) {
                 ]),
             ])
         ).start();
+        // GoogleSignin.configure({
+        //     webClientId: "YOUR_WEB_CLIENT_ID", // Get this from your Firebase console
+        // });
     }, []);
 
     const validateInputs = () => {
@@ -187,6 +193,50 @@ export default function LoginPage({ navigation }) {
         }
     };
 
+    // const handleGoogleSignIn = async () => {
+    //     try {
+    //         await GoogleSignin.hasPlayServices();
+    //         const { idToken } = await GoogleSignin.signIn();
+    //         const googleCredential = GoogleAuthProvider.credential(idToken);
+    //         const userCredential = await signInWithCredential(
+    //             auth,
+    //             googleCredential
+    //         );
+
+    //         // Check user role in Firestore
+    //         const user = userCredential.user;
+    //         const collectionRef = collection(db, role + "s");
+    //         const q = query(
+    //             collectionRef,
+    //             where("email", "==", user.email),
+    //             where("universityId", "==", universityId)
+    //         );
+    //         const querySnapshot = await getDocs(q);
+
+    //         if (!querySnapshot.empty) {
+    //             const userData = querySnapshot.docs[0].data();
+    //             // Navigate based on role (similar to handleLogin)
+    //             switch (role) {
+    //                 case "student":
+    //                     navigation.navigate("StudentDashboardApp", {
+    //                         screen: "Dashboard",
+    //                         initial: true,
+    //                         params: {
+    //                             studentId: userData.id,
+    //                             universityId: universityId,
+    //                         },
+    //                     });
+    //                     break;
+    //                 // ... other cases for different roles
+    //             }
+    //         } else {
+    //             setErrorMessage("User not found in selected role.");
+    //         }
+    //     } catch (error) {
+    //         setErrorMessage(error.message);
+    //     }
+    // };
+
     const handleForgotPassword = () => {
         console.log("Forgot Password button pressed");
         // Implement forgot password functionality
@@ -245,120 +295,157 @@ export default function LoginPage({ navigation }) {
             ></Animated.View>
 
             {/* Title with animation */}
-            <Animated.Text style={[styles.title, { opacity: fadeAnim }]}>
-                Evento
-            </Animated.Text>
+            
+                <Animated.Text style={[styles.title, { opacity: fadeAnim }]}>
+                    Evento
+                </Animated.Text>
 
-            <View style={styles.pickerContainer}>
-                <Picker
-                    selectedValue={role}
-                    onValueChange={(itemValue) => setRole(itemValue)}
-                    style={styles.picker}
-                    dropdownIconColor="#fff"
+                <View style={styles.pickerContainer}>
+                    <Picker
+                        selectedValue={role}
+                        onValueChange={(itemValue) => setRole(itemValue)}
+                        style={styles.picker}
+                        dropdownIconColor="#fff"
+                    >
+                        <Picker.Item label="Student" value="student" />
+                        <Picker.Item label="Coordinator" value="coordinator" />
+                        <Picker.Item
+                            label="Event Manager"
+                            value="eventManager"
+                        />
+                        <Picker.Item label="Admin" value="admin" />
+                    </Picker>
+                </View>
+
+                {/* Email Input */}
+                <View style={styles.input}>
+                    <Icon
+                        name="mail-outline"
+                        size={20}
+                        color="#ddd"
+                        style={{ marginHorizontal: 5 }}
+                    />
+                    <TextInput
+                        placeholder="Email address"
+                        keyboardType="email-address"
+                        value={email}
+                        onChangeText={setEmail}
+                        style={styles.textInput}
+                    />
+                </View>
+
+                {/* Password Input */}
+                <View style={styles.input}>
+                    <Icon
+                        name="lock-closed-outline"
+                        size={20}
+                        color="#ddd"
+                        style={{ marginHorizontal: 5 }}
+                    />
+                    <TextInput
+                        placeholder="Password"
+                        secureTextEntry
+                        value={password}
+                        onChangeText={setPassword}
+                        style={styles.textInput}
+                    />
+                </View>
+
+                <View style={styles.input}>
+                    <Icon
+                        name="id-card-outline"
+                        size={20}
+                        color="#ddd"
+                        style={{ marginHorizontal: 5 }}
+                    />
+                    <TextInput
+                        placeholder={`Enter ${role} ID`}
+                        value={id}
+                        onChangeText={setId}
+                        style={styles.textInput}
+                        placeholderTextColor="#888"
+                    />
+                </View>
+
+                <View style={styles.input}>
+                    <Icon
+                        name="business-outline"
+                        size={20}
+                        color="#ddd"
+                        style={{ marginHorizontal: 5 }}
+                    />
+                    <TextInput
+                        placeholder="University ID"
+                        value={universityId}
+                        onChangeText={setUniversityId}
+                        style={styles.textInput}
+                        placeholderTextColor="#888"
+                    />
+                </View>
+
+                {/* Error Message */}
+                {errorMessage !== "" && (
+                    <Text style={styles.errorText}>{errorMessage}</Text>
+                )}
+
+                {/* Login Button */}
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={handleLogin}
+                    activeOpacity={0.8}
                 >
-                    <Picker.Item label="Student" value="student" />
-                    <Picker.Item label="Coordinator" value="coordinator" />
-                    <Picker.Item label="Event Manager" value="eventManager" />
-                    <Picker.Item label="Admin" value="admin" />
-                </Picker>
-            </View>
+                    <Text style={styles.buttonText}>LOGIN</Text>
+                </TouchableOpacity>
 
-            {/* Email Input */}
-            <View style={styles.input}>
-                <Icon
-                    name="mail-outline"
-                    size={20}
-                    color="#ddd"
-                    style={{ marginHorizontal: 5 }}
-                />
-                <TextInput
-                    placeholder="Email address"
-                    keyboardType="email-address"
-                    value={email}
-                    onChangeText={setEmail}
-                    style={styles.textInput}
-                />
-            </View>
+                {/* <TouchableOpacity
+                    style={styles.googleButton}
+                    onPress={handleGoogleSignIn}
+                    activeOpacity={0.8}
+                >
+                    <Icon
+                        name="logo-google"
+                        size={20}
+                        color="#fff"
+                        style={{ marginRight: 10 }}
+                    />
+                    <Text style={styles.buttonText}>Sign in with Google</Text>
+                </TouchableOpacity> */}
 
-            {/* Password Input */}
-            <View style={styles.input}>
-                <Icon
-                    name="lock-closed-outline"
-                    size={20}
-                    color="#ddd"
-                    style={{ marginHorizontal: 5 }}
-                />
-                <TextInput
-                    placeholder="Password"
-                    secureTextEntry
-                    value={password}
-                    onChangeText={setPassword}
-                    style={styles.textInput}
-                />
-            </View>
+                {/* Forgot Password */}
+                <TouchableOpacity onPress={handleForgotPassword}>
+                    <Text style={styles.backButtonText}>Forgot Password?</Text>
+                </TouchableOpacity>
 
-            <View style={styles.input}>
-                <Icon
-                    name="id-card-outline"
-                    size={20}
-                    color="#ddd"
-                    style={{ marginHorizontal: 5 }}
-                />
-                <TextInput
-                    placeholder={`Enter ${role} ID`}
-                    value={id}
-                    onChangeText={setId}
-                    style={styles.textInput}
-                    placeholderTextColor="#888"
-                />
-            </View>
-
-            <View style={styles.input}>
-                <Icon
-                    name="business-outline"
-                    size={20}
-                    color="#ddd"
-                    style={{ marginHorizontal: 5 }}
-                />
-                <TextInput
-                    placeholder="University ID"
-                    value={universityId}
-                    onChangeText={setUniversityId}
-                    style={styles.textInput}
-                    placeholderTextColor="#888"
-                />
-            </View>
-
-            {/* Error Message */}
-            {errorMessage !== "" && (
-                <Text style={styles.errorText}>{errorMessage}</Text>
-            )}
-
-            {/* Login Button */}
-            <TouchableOpacity
-                style={styles.button}
-                onPress={handleLogin}
-                activeOpacity={0.8}
-            >
-                <Text style={styles.buttonText}>LOGIN</Text>
-            </TouchableOpacity>
-
-            {/* Forgot Password */}
-            <TouchableOpacity onPress={handleForgotPassword}>
-                <Text style={styles.backButtonText}>Forgot Password?</Text>
-            </TouchableOpacity>
-
-            {/* Sign Up Navigation */}
-            <TouchableOpacity onPress={handleSignUp}>
-                <Text style={styles.backButtonText}>
-                    Don't have an account? Sign Up
-                </Text>
-            </TouchableOpacity>
+                {/* Sign Up Navigation */}
+                <TouchableOpacity onPress={handleSignUp}>
+                    <Text style={styles.backButtonText}>
+                        Don't have an account? Sign Up
+                    </Text>
+                </TouchableOpacity>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
+    // googleButton: {
+    //     flexDirection: "row",
+    //     alignItems: "center",
+    //     backgroundColor: "#fff",
+    //     paddingVertical: 12,
+    //     paddingHorizontal: 20,
+    //     borderRadius: 8,
+    //     marginVertical: 10,
+    // },
+    // googleIcon: {
+    //     width: 24,
+    //     height: 24,
+    //     marginRight: 10,
+    // },
+    // googleButtonText: {
+    //     color: "#757575",
+    //     fontSize: 16,
+    //     fontWeight: "bold",
+    // },
     pickerContainer: {
         backgroundColor: "#333",
         borderRadius: 10,

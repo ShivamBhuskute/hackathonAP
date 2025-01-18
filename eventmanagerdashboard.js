@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
     View,
     Text,
@@ -18,7 +18,7 @@ import {
     navigate,
 } from "@react-navigation/drawer";
 import { Calendar } from "react-native-calendars";
-import { BarChart } from "react-native-chart-kit";
+import { BarChart, PieChart } from "react-native-chart-kit";
 import { db } from "./src/firebase";
 import {
     collection,
@@ -75,27 +75,12 @@ const EventManagerDashboard = ({ route, navigation }) => {
     const [isTaskModalVisible, setIsTaskModalVisible] = useState(false);
     const [selectedOngoingEvent, setSelectedOngoingEvent] = useState(null);
 
-    
-
     const { universityId, managerId } = route.params || {};
 
-    // const generateQRCode = (event) => {
-    //     const qrData = {
-    //         eventId: event.id,
-    //         eventName: event.eventName,
-    //         timestamp: new Date().toISOString(),
-    //         type: "coordinator",
-    //     };
-
-    //     setQrData(JSON.stringify(qrData));
-    //     setSelectedEvent(event);
-    //     setQrModalVisible(true);
-    // };
-
     // console.log(universityId, managerId);
-    // console.log("Route params:", route.params); // Check if params are being passed correctly
-    // console.log("University ID:", universityId); // Debug log
-    // console.log("Manager ID:", managerId);
+    console.log("Route params:", route.params); // Check if params are being passed correctly
+    console.log("University ID:", universityId); // Debug log
+    console.log("Manager ID:", managerId);
 
     useEffect(() => {
         if (universityId) {
@@ -167,7 +152,7 @@ const EventManagerDashboard = ({ route, navigation }) => {
             const q = query(
                 eventsRef,
                 where("universityId", "==", universityId),
-                where("status", "==", "over") // Filter for upcoming events
+                where("status", "==", "completed") // Filter for upcoming events
             );
             const snapshot = await getCountFromServer(q);
             setCompletedEvents(snapshot.data().count); // Update state with the count
@@ -258,6 +243,32 @@ const EventManagerDashboard = ({ route, navigation }) => {
         }
     };
 
+    const handlePing = () => {
+        // Temporary routing function
+        navigation.navigate("pingChats", {
+            universityId: universityId,
+            managerId: managerId
+        });
+    };
+
+    // const [events, setEvents] = useState([
+    //     {
+    //         id: "1",
+    //         title: "Tech Fest 2025",
+    //         date: "2025-01-20",
+    //         status: "Upcoming",
+    //         description: "A technology festival with various speakers.",
+    //         location: "Convention Center",
+    //     },
+    //     {
+    //         id: "2",
+    //         title: "Sports Day",
+    //         date: "2025-01-25",
+    //         status: "Completed",
+    //         description: "A day filled with sports activities.",
+    //         location: "City Stadium",
+    //     },
+    // ]);
     const [notifications, setNotifications] = useState([
         {
             id: "1",
@@ -291,19 +302,6 @@ const EventManagerDashboard = ({ route, navigation }) => {
         event.eventName.includes(searchQuery)
     );
 
-    // Sample data for the chart
-    // const chartData = {
-    //     labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-    //     datasets: [
-    //         {
-    //             data: [200, 300, 400, 500, 600, 700],
-    //             color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`, // White color
-    //             strokeWidth: 2, // optional
-    //         },
-    //     ],
-    // };
-
-    // Pie chart data for task completion
     const taskCompletionData = [
         {
             name: "Completed",
@@ -353,62 +351,81 @@ const EventManagerDashboard = ({ route, navigation }) => {
                 </View>
 
                 {/* Event Search Section */}
-                <TextInput
-                    style={styles.searchBar}
-                    placeholder="Search Events"
-                    placeholderTextColor="#888"
-                    value={searchQuery}
-                    onChangeText={handleSearch}
+                <View style={styles.container}>
+                    <ScrollView style={styles.mainContent}>
+                        {/* ... (other components) */}
+
+                        <TouchableOpacity
+                            style={styles.pingButton}
+                            onPress={handlePing}
+                        >
+                            <Text style={styles.pingButtonText}>PING</Text>
+                        </TouchableOpacity>
+
+                        {/* ... (rest of the components) */}
+                    </ScrollView>
+                </View>
+                {/* Event List Section */}
+                <Text style={styles.subheading}>Upcoming Events</Text>
+                <FlatList
+                    data={upcomingEvents}
+                    keyExtractor={(item) => item.id}
+                    renderItem={({ item }) => (
+                        <View style={styles.eventCard}>
+                            <View style={styles.eventHeader}>
+                                <Text style={styles.eventName}>
+                                    {item.eventName}
+                                </Text>
+                                <TouchableOpacity
+                                    onPress={() => handleEventPress(item)}
+                                    style={styles.detailsButton}
+                                >
+                                    <Text style={styles.detailsButtonText}>
+                                        View Details
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                            <Text style={styles.eventDetails}>
+                                <Text style={styles.label}>Status:</Text>{" "}
+                                {item.status}
+                            </Text>
+                            <Text style={styles.eventDetails}>
+                                <Text style={styles.label}>Date:</Text>{" "}
+                                {item.date}
+                            </Text>
+                        </View>
+                    )}
                 />
 
-                {/* Event List Section */}
-                <Text style={styles.sectionTitle}>Upcoming Events</Text>
-                <View style={styles.cardContainer}>
-                    <FlatList
-                        data={upcomingEvents}
-                        keyExtractor={(item) => item.id}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity
-                                onPress={() => handleEventPress(item)}
-                                style={styles.eventCard}
-                            >
-                                <Text style={styles.eventTitle}>
+                <Text style={styles.subheading}>Ongoing Events</Text>
+                <FlatList
+                    data={ongoingEvents}
+                    keyExtractor={(item) => item.id}
+                    renderItem={({ item }) => (
+                        <View style={styles.eventCard}>
+                            <View style={styles.eventHeader}>
+                                <Text style={styles.eventName}>
                                     {item.eventName}
                                 </Text>
-                                {/* <Text style={styles.eventDate}>
-                                    {item.date}
-                                </Text> */}
-                                <Text style={styles.eventStatus}>
-                                    Status: {item.status}
-                                </Text>
-                            </TouchableOpacity>
-                        )}
-                    />
-                </View>
-
-                <Text style={styles.sectionTitle}>Ongoing Events</Text>
-                <View style={styles.cardContainer}>
-                    <FlatList
-                        data={ongoingEvents}
-                        keyExtractor={(item) => item.id}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity
-                                onPress={() => {
-                                    setSelectedOngoingEvent(item);
-                                    setIsTaskModalVisible(true);
-                                }}
-                                style={styles.eventCard}
-                            >
-                                <Text style={styles.eventTitle}>
-                                    {item.eventName}
-                                </Text>
-                                <Text style={styles.eventStatus}>
-                                    Status: {item.status}
-                                </Text>
-                            </TouchableOpacity>
-                        )}
-                    />
-                </View>
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        setSelectedOngoingEvent(item);
+                                        setIsTaskModalVisible(true);
+                                    }}
+                                    style={styles.detailsButton}
+                                >
+                                    <Text style={styles.detailsButtonText}>
+                                        Manage
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                            <Text style={styles.eventDetails}>
+                                <Text style={styles.label}>Status:</Text>{" "}
+                                {item.status}
+                            </Text>
+                        </View>
+                    )}
+                />
 
                 {/* Add this Modal for task options */}
                 <Modal
@@ -430,7 +447,6 @@ const EventManagerDashboard = ({ route, navigation }) => {
                                         eventId: selectedOngoingEvent?.id,
                                         universityId: universityId,
                                         managerId: managerId,
-                                        // eventName: eventName
                                     });
                                     setIsTaskModalVisible(false);
                                 }}
@@ -528,6 +544,7 @@ const EventManagerDashboard = ({ route, navigation }) => {
                     </View>
                 </Modal>
             </ScrollView>
+
             {/* Calendar Button */}
             <TouchableOpacity
                 style={styles.calendarButton}
@@ -536,6 +553,7 @@ const EventManagerDashboard = ({ route, navigation }) => {
                 <Ionicons name="calendar" size={24} color="#FFF" />
                 <Text style={styles.calendarButtonText}>Create events</Text>
             </TouchableOpacity>
+
             {/* Calendar Modal */}
             <Modal
                 visible={isCalendarModalVisible}
@@ -666,7 +684,6 @@ const EventManagerDashboard = ({ route, navigation }) => {
                     </View>
                 </View>
             </Modal>
-            
         </View>
     );
 };
@@ -816,9 +833,91 @@ function EventManagerDashboardApp() {
 }
 
 const styles = StyleSheet.create({
+    pingButton: {
+        backgroundColor: "#6F9CDE", // Changed to blue
+        padding: 15,
+        borderRadius: 10,
+        alignItems: "center",
+        marginBottom: 20,
+    },
+    pingButtonText: {
+        color: "#FFF", // Changed to white for better contrast
+        fontSize: 18,
+        fontWeight: "bold",
+    },
     container: {
         flex: 1,
-        backgroundColor: "#000", // Black background
+        backgroundColor: "#121212",
+        padding: 16,
+    },
+    heading: {
+        fontSize: 24,
+        color: "#669bbc",
+        fontWeight: "bold",
+        marginBottom: 16,
+    },
+    subheading: {
+        fontSize: 18,
+        color: "#bde0fe",
+        marginBottom: 8,
+    },
+    input: {
+        backgroundColor: "#1E1E1E",
+        borderRadius: 8,
+        padding: 10,
+        color: "#FFF",
+        marginBottom: 16,
+    },
+    eventCard: {
+        backgroundColor: "#1E1E1E",
+        padding: 16,
+        borderRadius: 8,
+        marginBottom: 12,
+    },
+    eventHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 8,
+    },
+    eventName: {
+        fontSize: 18,
+        color: "#9c89b8",
+        fontWeight: "bold",
+    },
+    detailsButton: {
+        backgroundColor: "#6F9CDE", // Changed to blue
+        borderRadius: 8,
+        padding: 8,
+    },
+    detailsButtonText: {
+        color: "#FFF",
+    },
+    eventDetails: {
+        color: "#BBB",
+        marginBottom: 4,
+    },
+    label: {
+        fontWeight: "bold",
+        color: "#FFF",
+    },
+    calendarButton: {
+        backgroundColor: "#6F9CDE", // Changed to blue
+        padding: 12,
+        borderRadius: 10,
+        flexDirection: "row",
+        alignItems: "center",
+        marginTop: 20,
+        justifyContent: "center",
+    },
+    calendarButtonText: {
+        marginLeft: 8,
+        color: "#FFF",
+        fontSize: 16,
+    },
+    container: {
+        flex: 1,
+        backgroundColor: "#000",
         paddingTop: 20,
     },
     sidebarContainer: {
@@ -827,7 +926,7 @@ const styles = StyleSheet.create({
         padding: 15,
     },
     sectionTitle: {
-        color: "#FFF", // White font color
+        color: "#FFF",
         fontSize: 18,
         fontWeight: "bold",
         marginBottom: 10,
@@ -889,7 +988,7 @@ const styles = StyleSheet.create({
         height: 80,
     },
     submitButton: {
-        backgroundColor: "#008080",
+        backgroundColor: "#6F9CDE", // Changed to blue
         padding: 10,
         borderRadius: 10,
         alignItems: "center",
@@ -929,7 +1028,7 @@ const styles = StyleSheet.create({
     },
     adminTag: {
         fontSize: 16,
-        color: "#008080",
+        color: "#6F9CDE", // Changed to blue
     },
     menuItem: {
         flexDirection: "row",
@@ -958,11 +1057,11 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     statTitle: {
-        color: "#FFF", // White font color
+        color: "#FFF",
         fontSize: 16,
     },
     statValue: {
-        color: "#FFF", // White font color
+        color: "#FFF",
         fontSize: 20,
         marginTop: 5,
     },
@@ -978,11 +1077,11 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     countdownText: {
-        color: "#FFF", // White font color
+        color: "#FFF",
         fontSize: 16,
     },
     countdownTimer: {
-        color: "#FFF", // White font color
+        color: "#FFF",
         fontSize: 14,
         marginTop: 5,
     },
@@ -998,16 +1097,16 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     taskText: {
-        color: "#FFF", // White font color
+        color: "#FFF",
         fontSize: 14,
     },
     taskStatus: {
-        color: "#008080", // Teal font color
+        color: "#6F9CDE", // Changed to blue
         fontSize: 14,
         marginTop: 5,
     },
     completeTaskButton: {
-        color: "#FFD700", // Gold font color
+        color: "#6F9CDE", // Changed to blue
         fontSize: 12,
         marginTop: 5,
     },
@@ -1023,11 +1122,11 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     notificationMessage: {
-        color: "#FFF", // White font color
+        color: "#FFF",
         fontSize: 14,
     },
     notificationTime: {
-        color: "#008080", // Teal font color
+        color: "#6F9CDE", // Changed to blue
         fontSize: 12,
         marginTop: 5,
     },
@@ -1039,7 +1138,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     calendarButton: {
-        backgroundColor: "#008080",
+        backgroundColor: "#6F9CDE", // Changed to blue
         padding: 12,
         borderRadius: 10,
         flexDirection: "row",
@@ -1053,7 +1152,7 @@ const styles = StyleSheet.create({
     },
     calendarButtonText: {
         marginLeft: 8,
-        color: "#FFF", // White font color
+        color: "#FFF",
         fontSize: 16,
     },
     modalOverlay: {
@@ -1063,7 +1162,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     modalContent: {
-        backgroundColor: "#222", // Dark background for modal
+        backgroundColor: "#222",
         padding: 24,
         borderRadius: 10,
         width: "80%",
@@ -1078,12 +1177,12 @@ const styles = StyleSheet.create({
     closeButton: {
         marginTop: 16,
         padding: 10,
-        backgroundColor: "#008080",
+        backgroundColor: "#6F9CDE", // Changed to blue
         borderRadius: 10,
         alignItems: "center",
     },
     closeButtonText: {
-        color: "#FFF", // White font color
+        color: "#FFF",
         fontSize: 16,
     },
     input: {
@@ -1120,10 +1219,10 @@ const styles = StyleSheet.create({
         width: "48%",
     },
     submitButton: {
-        backgroundColor: "#1E90FF",
+        backgroundColor: "#6F9CDE", // Changed to blue
     },
     cancelButton: {
-        backgroundColor: "#444",
+        backgroundColor: "#6F9CDE", // Changed to blue
     },
     buttonText: {
         color: "#FFF",
@@ -1132,7 +1231,7 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
     },
     modalButton: {
-        backgroundColor: "#1E90FF",
+        backgroundColor: "#6F9CDE", // Changed to blue
         padding: 12,
         borderRadius: 8,
         marginBottom: 10,
