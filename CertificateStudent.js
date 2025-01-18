@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView } from "react-native";
 import { Picker } from '@react-native-picker/picker';
+import { createStackNavigator } from '@react-navigation/stack'; 
+import CertificateGeneration from "./CertificateGeneration";
+import FeedbackPageStudent from "./FeedbackPageStudent";
 
 const certificates = [
   { id: 1, eventName: "AI Webinar", date: "2025-02-15", certificateStatus: "Available", feedbackSubmitted: true, certificateId: "AI12345" },
@@ -8,7 +11,7 @@ const certificates = [
   { id: 3, eventName: "Science Seminar", date: "2025-04-10", certificateStatus: "Available", feedbackSubmitted: true, certificateId: "SS111213" },
 ];
 
-const CertificateStudent= ({ navigation }) => {
+const CertificateStudent = ({ navigation }) => {
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [filteredCertificates, setFilteredCertificates] = useState(certificates);
 
@@ -25,7 +28,7 @@ const CertificateStudent= ({ navigation }) => {
       <Text style={styles.cardTitle}>{item.eventName}</Text>
       <Text style={styles.cardDate}>Date of Completion: {item.date}</Text>
       <Text style={styles.cardDetails}>Certificate ID: {item.certificateId}</Text>
-
+  
       {/* Certificate Eligibility Status */}
       <View style={styles.statusContainer}>
         {item.feedbackSubmitted ? (
@@ -34,16 +37,19 @@ const CertificateStudent= ({ navigation }) => {
           <Text style={styles.pendingStatus}>Feedback Pending</Text>
         )}
       </View>
-
+  
       {/* Certificate Download or Feedback Link */}
       {item.feedbackSubmitted ? (
-        <TouchableOpacity style={styles.downloadButton} onPress={() => {/* Add download functionality here */}}>
+        <TouchableOpacity 
+          style={styles.downloadButton} 
+          onPress={() => navigation.navigate("CertificateGeneration", { certificateId: item.certificateId })}
+        >
           <Text style={styles.buttonText}>Download Certificate</Text>
         </TouchableOpacity>
       ) : (
         <TouchableOpacity 
           style={styles.feedbackButton} 
-          onPress={() => navigation.navigate("CompleteFeedback", { eventId: item.id })}
+          onPress={() => navigation.navigate("FeedbackPageStudent", { eventId: item.id })}
         >
           <Text style={styles.buttonText}>Complete Feedback</Text>
         </TouchableOpacity>
@@ -53,8 +59,6 @@ const CertificateStudent= ({ navigation }) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.headerText}>Certificates</Text>
-
       {/* Filters Section */}
       <View style={styles.filterSection}>
         <Text style={styles.filterLabel}>Filter by Certificate Status:</Text>
@@ -90,18 +94,24 @@ const CertificateStudent= ({ navigation }) => {
   );
 };
 
+const Stack = createStackNavigator();
+
+function CertificateStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {/* Add CertificateStudent as the first screen in the stack */}
+      <Stack.Screen name="CertificateList" component={CertificateStudent} />
+      <Stack.Screen name="CertificateGeneration" component={CertificateGeneration} />
+      <Stack.Screen name="FeedbackPageStudent" component={FeedbackPageStudent} />
+    </Stack.Navigator>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 20,
     backgroundColor: "#121212",  // Dark Theme
-  },
-  headerText: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 20,
-    textAlign: "center",
   },
   filterSection: {
     backgroundColor: "#1f1f1f",
@@ -207,4 +217,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CertificateStudent;
+export default CertificateStack;
