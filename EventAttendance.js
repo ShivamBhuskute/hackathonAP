@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";  // Add useRef import
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -37,9 +37,9 @@ const EventManagerDashboard = () => {
   ]);
 
   const [qrModalVisible, setQrModalVisible] = useState(false);
-  const [coordinatorModalVisible, setCoordinatorModalVisible] = useState(false);  // Add state for coordinator modal
+  const [coordinatorModalVisible, setCoordinatorModalVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const svgRef = useRef();  // Initialize the useRef hook for QRCode
+  const svgRef = useRef();
 
   const generateQRCode = (event) => {
     setSelectedEvent(event);
@@ -79,7 +79,7 @@ const EventManagerDashboard = () => {
 
   const showCoordinatorAttendance = (event) => {
     setSelectedEvent(event);
-    setCoordinatorModalVisible(true);  // Open coordinator modal
+    setCoordinatorModalVisible(true);
   };
 
   const renderEventOverview = ({ item }) => (
@@ -98,19 +98,19 @@ const EventManagerDashboard = () => {
       </Text>
       <TouchableOpacity
         style={styles.qrButton}
-        onPress={() => generateQRCode(item)} // QR code generation
+        onPress={() => generateQRCode(item)}
       >
         <Text style={styles.qrButtonText}>Generate QR Code</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.attendanceButton}
-        onPress={() => showCoordinatorAttendance(item)} // View Coordinator Attendance
+        onPress={() => showCoordinatorAttendance(item)}
       >
         <Text style={styles.attendanceButtonText}>View Coordinator Attendance</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.attendanceButton}
-        onPress={() => downloadAttendanceReport(item)} // Download student attendance report
+        onPress={() => downloadAttendanceReport(item)}
       >
         <Text style={styles.attendanceButtonText}>Download Student Attendance Report</Text>
       </TouchableOpacity>
@@ -139,13 +139,13 @@ const EventManagerDashboard = () => {
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>QR Code for {selectedEvent.name}</Text>
               <QRCode
-                value={`Event: ${selectedEvent.name}, Date: ${selectedEvent.date}, Time: ${selectedEvent.time}`}
+                value={`https://eventattendpurva.vercel.app/`}
                 size={200}
-                getRef={svgRef} // Use the ref from useRef hook
+                getRef={svgRef}
               />
               <TouchableOpacity
                 style={styles.saveButton}
-                onPress={saveQRCode} // Save QR Code functionality
+                onPress={saveQRCode}
               >
                 <Text style={styles.saveButtonText}>Save QR Code</Text>
               </TouchableOpacity>
@@ -192,6 +192,7 @@ const EventManagerDashboard = () => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

@@ -11,7 +11,7 @@ import {
     getDoc,
     deleteDoc,
 } from "firebase/firestore";
-import { db } from "./src/firebase";
+import { db, createUserWithEmailAndPassword } from "./src/firebase";
 import {
     View,
     Text,
